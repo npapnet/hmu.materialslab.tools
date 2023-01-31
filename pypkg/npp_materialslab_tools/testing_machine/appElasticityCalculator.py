@@ -1,13 +1,15 @@
 # from https://matplotlib.org/gallery/misc/cursor_demo_sgskip.html
+import datetime
+import pathlib
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.widgets import TextBox, Button
-from tkinter import Tk
-from tkinter.filedialog import askopenfilename
-import ntpath
-import datetime
+from matplotlib.widgets import Button, TextBox
 from npp_materialslab_tools import TestingData
+
 
 class Cursor():
     def __init__(self, ax, ID, x, y, indx):
@@ -72,10 +74,10 @@ class ElasticityModulusCalculator(object):
             Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
             filename = askopenfilename(initialdir = "./")
         try:
+            self._fname = pathlib.Path(filename)
             self._tdobj = TestingData(fname=filename)
 
             df = self._tdobj._data
-            self._fname = filename
             self._df = df
             self.displacement = np.array(df.index)
             self.F_Ns = np.array(df['load_avg'])
@@ -123,9 +125,6 @@ class ElasticityModulusCalculator(object):
         """        
         self.load_data(filename=None)
         self.reset_SM()
-        self.ax.cla()
-        self.create_plot()
-        self.txt = self.ax.text(0.01, 0.95, ntpath.basename(self._fname)[:6], transform=self.ax.transAxes)
 
     def appendToFile(self):
         if self._sm != 2:
@@ -140,7 +139,7 @@ class ElasticityModulusCalculator(object):
         with open(self._res_filename, 'a') as file:
             E_GPa_pt = self._compute_mod_elasticity()
             E_GPa_lnr = self._compute_mod_elasticity_lnr(self._points_collected[1].indx, self._points_collected[2].indx)
-            file.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"), ntpath.basename(self._fname),self._dim_w, self._dim_t, self._points_collected[1].indx, self._points_collected[2].indx, E_GPa_pt, E_GPa_lnr))
+            file.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"), self._fname.stem ,self._dim_w, self._dim_t, self._points_collected[1].indx, self._points_collected[2].indx, E_GPa_pt, E_GPa_lnr))
        
     def reset_SM(self):
         ''' resets state machine status'''
@@ -157,6 +156,11 @@ class ElasticityModulusCalculator(object):
         self._points_collected = {}
         self._sm = 0
         self.txt.set_text('')
+
+        self.ax.cla()
+        self.create_plot()
+        self.txt = self.ax.text(0.01, 0.95, self._fname.stem, transform=self.ax.transAxes)
+
 
     def calc_crossection(self):
         ''' calcate crossection'''
