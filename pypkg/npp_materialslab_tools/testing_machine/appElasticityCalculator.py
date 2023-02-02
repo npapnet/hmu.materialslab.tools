@@ -10,7 +10,8 @@ import pandas as pd
 from matplotlib.widgets import Button, TextBox
 from npp_materialslab_tools import TestingData
 
-
+DEVELOPMENT_FLAG = True
+DEVELOPMENT_FNAME = "testingMachine/data/new XY 0 ABS_CNT 2%.csv"   
 class Cursor():
     def __init__(self, ax, ID, x, y, indx):
         '''
@@ -41,6 +42,60 @@ class Cursor():
             self.lx = None
             self.ly = None
 
+
+
+@dataclass
+class SpecimenDeimensions():
+    width:float
+    thickness:float
+    gauge_length:float
+
+class ElasticityModulusCalcs():
+    """class for performing the calculations
+
+    Returns:
+        _type_: _description_
+    """    
+    def __init__(self, tdobj:TestingData):
+        self._testing_data_obj= tdobj
+        self._df = self._tdobj._data
+        self.displacement = np.array(self._df .index)
+        self.F_Ns = np.array(self._df ['load_avg'])
+
+    def computations(self, gauge_length:float, thickness:float, width:float ):
+        self.csArea_mm2 = thickness*width
+        self.exxs = self.displacement / gauge_length
+        E_GPa_pt = self._compute_mod_elasticity()
+        E_GPa_lnr = self._compute_mod_elasticity_lnr(self._points_collected[1].indx, self._points_collected[2].indx)
+        print('E (pt): {:0.2f}[MPa]       E (linear regression): {:0.2f}[MPa] '.format(E_GPa_pt, E_GPa_lnr))
+        # self.txt.set_visible(False)
+        self.txt = self.ax.text(0.7, 0.05, '', transform=self.ax.transAxes)
+        self.txt.set_text('E = {:.2f}[Mpa]'.format (E_GPa_lnr))
+        # self.txt.set_visible(True)
+
+    def _compute_mod_elasticity(self, points_collected:dict):
+        '''Calculate modulus of elasticity using two points on the curve'''
+
+        exxs  = np.zeros((2,))
+        Fs  = np.zeros((2,)) # N
+        
+        for k in range(2):
+            exxs[k] = self.exxs[self._points_collected[k+1].indx]
+            Fs[k] = self._points_collected[k+1].y 
+        E_GPa_pt = np.diff(Fs)/( self.csArea_mm2 * np.diff(exxs))
+        # print('E: {:0.2f}[GPa]'.format(E_GPa_pt[0]))
+        return E_GPa_pt[0]
+    
+
+    def _compute_mod_elasticity_lnr(self, start_ind, end_ind):
+        ''' compute modulus of elasticity using  linear regression '''
+        E_GPa_lnr = np.polyfit(self.exxs[start_ind:end_ind],self.F_Ns[start_ind:end_ind]/self.csArea_mm2,deg=1)
+        self._l_selected = self.ax.plot(self.displacement[start_ind:end_ind], self.F_Ns[start_ind:end_ind], 'r')
+        # print('E: {:0.2f}[GPa] (linear regression)'.format(E_GPa_lnr[0]))
+        return E_GPa_lnr[0]
+
+
+
 class ElasticityModulusCalculatorGUI(object):
     """
     Like Cursor but the crosshair snaps to the nearest x, y point.
@@ -56,7 +111,7 @@ class ElasticityModulusCalculatorGUI(object):
 
     def __init__(self,  filename=None):
         self._res_filename = None
-        self.fig, self.ax = plt.subplots()
+        self.fig, self.ax = plt.subplots(figsize=(12, 12))
         plt.subplots_adjust(bottom=0.25, top=0.98)
         self.txt = self.ax.text(0.7, 0.05, '', transform=self.ax.transAxes)
         self.fig.canvas.mpl_connect('button_press_event', self.mouse_click)
@@ -71,17 +126,24 @@ class ElasticityModulusCalculatorGUI(object):
         self._createTBs()
 
     def load_data(self, filename=None):
+        """function that loads the data
+
+        Args:
+            filename (_type_, optional): _description_. Defaults to None.
+        """ 
+        if DEVELOPMENT_FLAG:
+            filename = DEVELOPMENT_FNAME    
         if not filename:
+            filename = "testingMachine/data/new XY 0 ABS_CNT 2%.csv"
             Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
             filename = askopenfilename(initialdir = "./")
         try:
             self._fname = pathlib.Path(filename)
             self._tdobj = TestingData(fname=filename)
 
-            df = self._tdobj._data
-            self._df = df
-            self.displacement = np.array(df.index)
-            self.F_Ns = np.array(df['load_avg'])
+            self._df = self._tdobj._data
+            self.displacement = np.array(self._df .index)
+            self.F_Ns = np.array(self._df ['load_avg'])
             # self.exxs = np.ones_like(self.F_Ns)
         except Exception as e:
             print(e)        
@@ -89,7 +151,7 @@ class ElasticityModulusCalculatorGUI(object):
     def create_plot(self):
         # text location in axes coords
         self.ax.plot(self.displacement, self.F_Ns, 'o')
-        self.ax.set_xlabel( 'time[s]')
+        self.ax.set_xlabel( 'Displacement [mm]')
         self.ax.set_ylabel( 'F[N]')
 
     def _createTBs(self):
@@ -177,10 +239,10 @@ class ElasticityModulusCalculatorGUI(object):
         self.exxs = self.displacement / self._dim_l
         E_GPa_pt = self._compute_mod_elasticity()
         E_GPa_lnr = self._compute_mod_elasticity_lnr(self._points_collected[1].indx, self._points_collected[2].indx)
-        print('E (pt): {:0.2f}[GPa]       E (linear regression): {:0.2f}[GPa] '.format(E_GPa_pt, E_GPa_lnr))
+        print('E (pt): {:0.2f}[MPa]       E (linear regression): {:0.2f}[MPa] '.format(E_GPa_pt, E_GPa_lnr))
         # self.txt.set_visible(False)
         self.txt = self.ax.text(0.7, 0.05, '', transform=self.ax.transAxes)
-        self.txt.set_text('E = {:.2f}[Gpa]'.format (E_GPa_lnr))
+        self.txt.set_text('E = {:.2f}[Mpa]'.format (E_GPa_lnr))
         # self.txt.set_visible(True)
 
 
