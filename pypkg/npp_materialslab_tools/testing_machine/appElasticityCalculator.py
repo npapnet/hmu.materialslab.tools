@@ -41,7 +41,7 @@ class Cursor():
             self.lx = None
             self.ly = None
 
-class ElasticityModulusCalculator(object):
+class ElasticityModulusCalculatorGUI(object):
     """
     Like Cursor but the crosshair snaps to the nearest x, y point.
     For simplicity, this assumes that *x* is sorted.
@@ -51,6 +51,7 @@ class ElasticityModulusCalculator(object):
     - 1: selected first point (ready to select first point)
     - 2: selected two points (perform computation)
     
+    # TODO split GUI from calculations
     """
 
     def __init__(self,  filename=None):
@@ -188,7 +189,7 @@ class ElasticityModulusCalculator(object):
         '''Calculate modulus of elasticity using two points on the curve'''
         self.calc_crossection()
         exxs  = np.zeros((2,))
-        Fs  = np.zeros((2,))
+        Fs  = np.zeros((2,)) # N
         
         for k in range(2):
             exxs[k] = self.exxs[self._points_collected[k+1].indx]
@@ -251,6 +252,6 @@ class ElasticityModulusCalculator(object):
 if __name__ == "__main__":
 
     # snap_cursor = ElasticityModulusCalculator('../Results/20190327-tests/D00_02.xlsx')
-    snap_cursor = ElasticityModulusCalculator()
+    snap_cursor = ElasticityModulusCalculatorGUI()
 
     plt.show()
