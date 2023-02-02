@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from matplotlib.widgets import Button, TextBox
 from npp_materialslab_tools import TestingData
+from dataclasses import dataclass
 
 DEVELOPMENT_FLAG = True
 DEVELOPMENT_FNAME = "testingMachine/data/new XY 0 ABS_CNT 2%.csv"   
@@ -45,10 +46,19 @@ class Cursor():
 
 
 @dataclass
-class SpecimenDeimensions():
-    width:float
-    thickness:float
-    gauge_length:float
+class SpecimenDimensions():
+    width_mm:float
+    thickness_mm:float
+    gauge_length_mm:float
+
+    @property
+    def csArea_mm2(self):
+        """returns the cross-sectional area in mm2
+
+        Returns:
+            _type_: _description_
+        """        
+        return self.width_mm*self.thickness_mm
 
 class ElasticityModulusCalcs():
     """class for performing the calculations
@@ -58,44 +68,43 @@ class ElasticityModulusCalcs():
     """    
     def __init__(self, tdobj:TestingData):
         self._testing_data_obj= tdobj
-        self._df = self._tdobj._data
+        self._df = self._testing_data_obj._data
         self.displacement = np.array(self._df .index)
         self.F_Ns = np.array(self._df ['load_avg'])
 
-    def computations(self, gauge_length:float, thickness:float, width:float ):
-        self.csArea_mm2 = thickness*width
-        self.exxs = self.displacement / gauge_length
-        E_GPa_pt = self._compute_mod_elasticity()
-        E_GPa_lnr = self._compute_mod_elasticity_lnr(self._points_collected[1].indx, self._points_collected[2].indx)
-        print('E (pt): {:0.2f}[MPa]       E (linear regression): {:0.2f}[MPa] '.format(E_GPa_pt, E_GPa_lnr))
-        # self.txt.set_visible(False)
-        self.txt = self.ax.text(0.7, 0.05, '', transform=self.ax.transAxes)
-        self.txt.set_text('E = {:.2f}[Mpa]'.format (E_GPa_lnr))
-        # self.txt.set_visible(True)
+    def computations(self, specimen:SpecimenDimensions, points_collected:dict):
+        """perform computations
 
-    def _compute_mod_elasticity(self, points_collected:dict):
+        Args:
+            specimen (SpecimenDimensions): _description_
+            points_collected (dict): _description_
+
+        Returns:
+            _type_: _description_
+        """        
+        start_ind = points_collected[1].indx
+        end_ind = points_collected[2].indx
+        self.csArea_mm2 = specimen.csArea_mm2
+        self.exxs = self.displacement / specimen.gauge_length_mm
+        E_GPa_pt = self._compute_mod_elasticity(start_ind=start_ind, end_ind=end_ind )
+        ''' compute modulus of elasticity using  linear regression '''
+        E_GPa_lnr = np.polyfit(self.exxs[start_ind:end_ind],self.F_Ns[start_ind:end_ind]/self.csArea_mm2,deg=1)[0]
+        # print('E (pt): {:0.2f}[MPa]       E (linear regression): {:0.2f}[MPa] '.format(E_GPa_pt, E_GPa_lnr))
+        return {'E_MPa_simple':E_GPa_pt, 'E_MPa_lsq':E_GPa_lnr}
+
+    def _compute_mod_elasticity(self, start_ind, end_ind):
         '''Calculate modulus of elasticity using two points on the curve'''
-
         exxs  = np.zeros((2,))
         Fs  = np.zeros((2,)) # N
         
-        for k in range(2):
-            exxs[k] = self.exxs[self._points_collected[k+1].indx]
-            Fs[k] = self._points_collected[k+1].y 
+        indices = [start_ind, end_ind]
+        for l in range(2):
+            indx = indices[l]
+            exxs[l] = self.exxs[indx]
+            Fs[l] = self.F_Ns[indx] 
         E_GPa_pt = np.diff(Fs)/( self.csArea_mm2 * np.diff(exxs))
-        # print('E: {:0.2f}[GPa]'.format(E_GPa_pt[0]))
         return E_GPa_pt[0]
     
-
-    def _compute_mod_elasticity_lnr(self, start_ind, end_ind):
-        ''' compute modulus of elasticity using  linear regression '''
-        E_GPa_lnr = np.polyfit(self.exxs[start_ind:end_ind],self.F_Ns[start_ind:end_ind]/self.csArea_mm2,deg=1)
-        self._l_selected = self.ax.plot(self.displacement[start_ind:end_ind], self.F_Ns[start_ind:end_ind], 'r')
-        # print('E: {:0.2f}[GPa] (linear regression)'.format(E_GPa_lnr[0]))
-        return E_GPa_lnr[0]
-
-
-
 class ElasticityModulusCalculatorGUI(object):
     """
     Like Cursor but the crosshair snaps to the nearest x, y point.
@@ -139,14 +148,29 @@ class ElasticityModulusCalculatorGUI(object):
             filename = askopenfilename(initialdir = "./")
         try:
             self._fname = pathlib.Path(filename)
-            self._tdobj = TestingData(fname=filename)
+            # self._tdobj = TestingData(fname=filename)
 
-            self._df = self._tdobj._data
-            self.displacement = np.array(self._df .index)
-            self.F_Ns = np.array(self._df ['load_avg'])
-            # self.exxs = np.ones_like(self.F_Ns)
+            self.emc = ElasticityModulusCalcs(tdobj=TestingData(fname=filename))
+
         except Exception as e:
             print(e)        
+
+    @property 
+    def displacement(self):
+        """Delegates displacement to the ElasticityModulusCalcs
+
+        Returns:
+            _type_: _description_
+        """        
+        return self.emc.displacement
+    @property 
+    def F_Ns(self):
+        """Delegates the F_Ns to the  ElasticityModulusCalcs
+
+        Returns:
+            _type_: _description_
+        """        
+        return self.emc.F_Ns
 
     def create_plot(self):
         # text location in axes coords
@@ -224,50 +248,29 @@ class ElasticityModulusCalculatorGUI(object):
         self.create_plot()
         self.txt = self.ax.text(0.01, 0.95, self._fname.stem, transform=self.ax.transAxes)
 
-
-    def calc_crossection(self):
+    def get_specimenDimensions(self):
         ''' calcate crossection'''
         self._dim_w = float(self.tbWidth.text)
         self._dim_t = float(self.tbThickness.text)
         self._dim_l = float(self.tbGaugeLength.text)
 
-        self.csArea_mm2 = self._dim_w*self._dim_t # cross-sectional area
-        return self.csArea_mm2
+        self._specimenDimensions = SpecimenDimensions(gauge_length_mm=self._dim_l, thickness_mm= self._dim_t, width_mm=self._dim_w)
+        return self._specimenDimensions
 
     def computations(self):
-        self.calc_crossection()
-        self.exxs = self.displacement / self._dim_l
-        E_GPa_pt = self._compute_mod_elasticity()
-        E_GPa_lnr = self._compute_mod_elasticity_lnr(self._points_collected[1].indx, self._points_collected[2].indx)
-        print('E (pt): {:0.2f}[MPa]       E (linear regression): {:0.2f}[MPa] '.format(E_GPa_pt, E_GPa_lnr))
-        # self.txt.set_visible(False)
+        specimenDimensions= self.get_specimenDimensions()
+        self.exxs = self.displacement / specimenDimensions.gauge_length_mm
+        res= self.emc.computations(specimen=specimenDimensions, points_collected = self._points_collected)
+        E_GPa_pt = res['E_MPa_simple']
+        E_GPa_lnr = res['E_MPa_lsq']
+        #output to plot and console
+        start_ind = self._points_collected[1].indx
+        end_ind = self._points_collected[2].indx
+        self._l_selected = self.ax.plot(self.displacement[start_ind:end_ind], self.F_Ns[start_ind:end_ind], 'r')
         self.txt = self.ax.text(0.7, 0.05, '', transform=self.ax.transAxes)
         self.txt.set_text('E = {:.2f}[Mpa]'.format (E_GPa_lnr))
-        # self.txt.set_visible(True)
-
-
-
-    def _compute_mod_elasticity(self):
-        '''Calculate modulus of elasticity using two points on the curve'''
-        self.calc_crossection()
-        exxs  = np.zeros((2,))
-        Fs  = np.zeros((2,)) # N
-        
-        for k in range(2):
-            exxs[k] = self.exxs[self._points_collected[k+1].indx]
-            Fs[k] = self._points_collected[k+1].y 
-        E_GPa_pt = np.diff(Fs)/( self.csArea_mm2 * np.diff(exxs))
-        # print('E: {:0.2f}[GPa]'.format(E_GPa_pt[0]))
-        return E_GPa_pt[0]
-    
-
-    def _compute_mod_elasticity_lnr(self, start_ind, end_ind):
-        ''' compute modulus of elasticity using  linear regression '''
-        self.calc_crossection()
-        E_GPa_lnr = np.polyfit(self.exxs[start_ind:end_ind],self.F_Ns[start_ind:end_ind]/self.csArea_mm2,deg=1)
-        self._l_selected = self.ax.plot(self.displacement[start_ind:end_ind], self.F_Ns[start_ind:end_ind], 'r')
-        # print('E: {:0.2f}[GPa] (linear regression)'.format(E_GPa_lnr[0]))
-        return E_GPa_lnr[0]
+        # console
+        print('E (pt): {:0.2f}[MPa]       E (linear regression): {:0.2f}[MPa] '.format(E_GPa_pt, E_GPa_lnr))
 
     def _calc_x_y_ind(self, x_event, y_event ):
         ''' calculates the x, y and index from the event data
