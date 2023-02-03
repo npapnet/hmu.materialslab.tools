@@ -10,7 +10,9 @@ import pathlib
 # @dataclass
 class TestingData():
     """package for loading testing data from M2 machine
-    #TODO Find machine details
+
+    process the data and generates 
+    #TODO Find machine details Imada MX2 - 2500 N
 
     """    
     
