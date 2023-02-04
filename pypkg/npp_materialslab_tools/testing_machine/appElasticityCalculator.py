@@ -1,6 +1,7 @@
 # from https://matplotlib.org/gallery/misc/cursor_demo_sgskip.html
 import datetime
 import pathlib
+from dataclasses import dataclass
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
@@ -9,9 +10,8 @@ import numpy as np
 import pandas as pd
 from matplotlib.widgets import Button, TextBox
 from npp_materialslab_tools import TestingData
-from dataclasses import dataclass
 
-DEVELOPMENT_FLAG = True
+DEVELOPMENT_FLAG = False
 DEVELOPMENT_FNAME = "testingMachine/data/new XY 0 ABS_CNT 2%.csv"   
 class Cursor():
     def __init__(self, ax, ID, x, y, indx):

@@ -1,14 +1,20 @@
 #%%
+import pathlib
+from dataclasses import dataclass
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from dataclasses import dataclass
-import matplotlib.pyplot as plt
-import pathlib
-
 
 
 # @dataclass
 class TestingData():
+    """package for loading testing data from M2 machine
+
+    process the data and generates 
+    #TODO Find machine details Imada MX2 - 2500 N
+
+    """    
     
     def __init__(self, fname):
         self._fname = fname
@@ -16,6 +22,15 @@ class TestingData():
         self._preprocess_data()
 
     def _preprocess_data(self):
+        """preprocesses data
+        
+        creates calculation for each displacement point:
+        - load average
+        - load std
+        - load min 
+        - load max
+        - ci for +/- 2SD
+        """        
         df = self._rawdata
         df_mean = pd.concat( [
             df.groupby('displacement').mean().rename(columns={"load": 'load_avg'}), 
@@ -28,6 +43,11 @@ class TestingData():
 
     @property
     def load_displacement_avg_data(self):
+        """returns the displacement and average data
+
+        Returns:
+            _type_: _description_
+        """        
         return self._data.iloc[:,0].reset_index()
 
     @property

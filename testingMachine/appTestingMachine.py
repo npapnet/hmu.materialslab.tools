@@ -1,13 +1,20 @@
+
+#%% 
+# this is a proof of concept with an app that 
+# - plots a graphs
+# - allows selection of points
+# - draws a polygon. 
 #%%
 
-import time
 import pathlib
+import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from TestingMachine import TestingData
 from matplotlib.widgets import Button
+
+from npp_materialslab_tools import TestingData
 
 
 class TensileTestApp():
@@ -31,9 +38,10 @@ class TensileTestApp():
         df_mean = self._tdobj.data_avg_table
 
         ax.plot(df_mean.index, df_mean.iloc[:,0].values, alpha=.1, label= 'avg')
-        ax.plot(df_mean.index, df_mean.iloc[:,2:].values, alpha=.3, label=df_mean.iloc[:,2:].columns)# ['min', 'max', 'ci:2SD','c2'])
+        for d, label in zip(df_mean.iloc[:,2:].values.T, ['min', 'max', 'ci:2SD','c2']):
+            ax.plot(df_mean.index,d , alpha=.3, label=label ) # df_mean.iloc[:,2:].columns)
         self._set_labels(xlabel="Displacement [mm]", ylabel="Force [N]")
-        ax.legend()
+        # ax.legend()
 
         # adding buttons 
         self._fig.subplots_adjust(bottom=0.2)
