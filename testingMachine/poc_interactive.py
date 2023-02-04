@@ -39,6 +39,9 @@
 #     for p in ph:
 #         p.remove()
 
+#%%[markdown]
+# this is an example that select a point and plots another data set associated with that point
+#
 #%%
 
 import numpy as np
@@ -51,12 +54,19 @@ class PointBrowser:
     and 'p' keys to browse through the next and previous points
     """
 
-    def __init__(self):
+    def __init__(self, axs):
+        """_summary_
+
+        Args:
+            axs (list of axes objects): axis for points and for data
+        """        
+        self.ax = axs[0]
+        self.ax2 = axs[1]
         self.lastind = 0
 
-        self.text = ax.text(0.05, 0.95, 'selected: none',
-                            transform=ax.transAxes, va='top')
-        self.selected, = ax.plot([xs[0]], [ys[0]], 'o', ms=12, alpha=0.4,
+        self.text = self.ax.text(0.05, 0.95, 'selected: none',
+                            transform=self.ax.transAxes, va='top')
+        self.selected, = self.ax.plot([xs[0]], [ys[0]], 'o', ms=12, alpha=0.4,
                                  color='yellow', visible=False)
 
     def on_press(self, event):
@@ -99,12 +109,12 @@ class PointBrowser:
 
         dataind = self.lastind
 
-        ax2.clear()
-        ax2.plot(X[dataind])
+        self.ax2.clear()
+        self.ax2.plot(X[dataind])
 
-        ax2.text(0.05, 0.9, f'mu={xs[dataind]:1.3f}\nsigma={ys[dataind]:1.3f}',
-                 transform=ax2.transAxes, va='top')
-        ax2.set_ylim(-0.5, 1.5)
+        self.ax2.text(0.05, 0.9, f'mu={xs[dataind]:1.3f}\nsigma={ys[dataind]:1.3f}',
+                 transform=self.ax2.transAxes, va='top')
+        self.ax2.set_ylim(-0.5, 1.5)
         self.selected.set_visible(True)
         self.selected.set_data(xs[dataind], ys[dataind])
 
@@ -125,7 +135,7 @@ if __name__ == '__main__':
     ax.set_title('click on point to plot time series')
     line, = ax.plot(xs, ys, 'o', picker=True, pickradius=5)
 
-    browser = PointBrowser()
+    browser = PointBrowser(axs=(ax, ax2))
 
     fig.canvas.mpl_connect('pick_event', browser.on_pick)
     fig.canvas.mpl_connect('key_press_event', browser.on_press)
