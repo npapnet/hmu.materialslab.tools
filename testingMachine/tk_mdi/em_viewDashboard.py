@@ -56,10 +56,15 @@ class FrameDashboard(tk.Frame):
         self.lbLFolderSelected=tk.Label(self, text=' --NA--', width=self.COL_WIDTH, bg=self.COLOR_DISABLE, name='lblSelectImageDirectory')
         self.lbLFolderSelected.grid(column=1, row=1, sticky='ewns')
         #row2
-        self.btnPlotSimpleFile=tk.Button(self, text='plot Load \n Displacement', width=self.COL_WIDTH  
+        self.btnPlotLoadDisplacement=tk.Button(self, text='plot Load \n Displacement', width=self.COL_WIDTH  
             #,command=lambda :self.mvc_controller.plot_load_displacement()
-            , name='btnShowFileList')
-        self.btnPlotSimpleFile.grid(column=0, row=3, sticky='ew')
+            , name='btnLoadDisplacementPlot')
+        self.btnPlotLoadDisplacement.grid(column=0, row=3, sticky='ew')
+        
+        self.btnStressStrainPlot=tk.Button(self, text='plot Stress \n Strain', width=self.COL_WIDTH  
+            
+            , name='btnStressStrainPlot')
+        self.btnStressStrainPlot.grid(column=1, row=3, sticky='ew')
 
         ######################################  PARAMETERS 
 

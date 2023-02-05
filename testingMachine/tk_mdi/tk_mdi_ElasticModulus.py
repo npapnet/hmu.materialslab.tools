@@ -16,7 +16,7 @@ from em_viewDashboard import FrameDashboard
 
 from npp_materialslab_tools.tktools import TLMatplotlibGraph
 
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.DEBUG)
 
 #%% following code is useful for seeing the tk variables. 
 # btnUp = tk.Button( text='+', name='up (+)')
