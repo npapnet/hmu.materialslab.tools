@@ -77,9 +77,9 @@ class PointSelector:
         """attaches the event callback on the figure object
         """        
         self._fig.canvas.mpl_connect('pick_event', self.on_pick)
-        self._fig.canvas.mpl_connect('key_press_event', self.on_press)
+        self._fig.canvas.mpl_connect('key_press_event', self.on_keypress)
 
-    def on_press(self, event):
+    def on_keypress(self, event):
         if self.lastind is None:
             return
         if event.key not in ('n', 'p'):
