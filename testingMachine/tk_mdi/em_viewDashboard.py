@@ -7,8 +7,8 @@ import tkinter.font as tkfont
 # logging.basicConfig(level=logging.ERROR)
 
 BORDERWIDTH = 5
-DLP_Y_SIZE =600
-DLP_X_SIZE =800
+# DLP_Y_SIZE =600
+# DLP_X_SIZE =800
 
 class FrameDashboard(tk.Frame):
     __mvc_controller = None # needs initialisation
@@ -16,13 +16,6 @@ class FrameDashboard(tk.Frame):
     COLOR_ENABLE = 'green'
     COLOR_DISABLE = 'red'
     COLOR_DISABLEd_STATE = 'gray'
-
-    @property
-    def mvc_controller(self):
-        return self.__mvc_controller
-    
-    def set_controller(self, controller):
-        self.__mvc_controller =controller
 
     def __init__(self, master, mvc_model):
         """Constructor 
@@ -42,6 +35,13 @@ class FrameDashboard(tk.Frame):
         # self.model =  MVC_Model()
         self.__create_widgets()
 
+
+    @property
+    def mvc_controller(self):
+        return self.__mvc_controller
+    
+    def set_controller(self, controller):
+        self.__mvc_controller =controller
 
     def __create_widgets(self):
         #  widgets

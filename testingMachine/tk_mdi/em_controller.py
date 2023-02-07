@@ -4,9 +4,9 @@ import tkinter as tk
 from tkinter import filedialog
 
 import numpy as np
-from npp_materialslab_tools import TestingData
-from npp_materialslab_tools.testing_machine.appElasticityCalculator import \
-    ElasticityModulusCalcs, SpecimenDimensions
+from npp_materialslab_tools.testing_machine import TensileData, TensileSpecimenDimensions
+from npp_materialslab_tools.testing_machine.app_ElasticModGUI_v1 import \
+    ElasticityModulusCalcs
 from npp_materialslab_tools.tktools import TLMatplotlibGraph
 from em_model import MVC_Model
 from em_viewDashboard import FrameDashboard
@@ -64,11 +64,11 @@ class MVC_Controller():
         self.view_ss_graph.ax.set_ylabel( 'Stress [MPa]')
         self.view_ss_graph.canvas.draw() # this is important to show the graph
   
-    def get_specimen_data(self)->SpecimenDimensions:
+    def get_specimen_data(self)->TensileSpecimenDimensions:
         width = float(self.model.width_tkvar.get())
         thickness = float(self.model.thickness_tkvar.get())
         gauge_length = float(self.model.gaugelength_tkvar.get())
-        sd = SpecimenDimensions(width_mm=width, thickness_mm=thickness, gauge_length_mm=gauge_length)
+        sd = TensileSpecimenDimensions(width_mm=width, thickness_mm=thickness, gauge_length_mm=gauge_length)
         logging.debug(f'SpecimenCrosssection : {sd.csArea_mm2} [mm^2]')
         return sd
 
@@ -89,7 +89,7 @@ class MVC_Controller():
             self._fname = pathlib.Path(filename)
             # self._tdobj = TestingData(fname=filename)
 
-            self.emc = ElasticityModulusCalcs(tdobj=TestingData(fname=filename))
+            self.emc = ElasticityModulusCalcs(tdobj=TensileData(fname=filename))
         except Exception as e:
             print(e)   
 

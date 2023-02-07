@@ -6,7 +6,6 @@ class MVC_Model():
     FolderPath = None
     FileList = []
 
-
     def __init__(self):
         # self._exposure_ms = tk.IntVar(value=10)
         # self._delay_ms = tk.IntVar(value=10)

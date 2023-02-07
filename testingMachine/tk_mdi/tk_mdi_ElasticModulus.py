@@ -27,11 +27,9 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 #%%
-BORDERWIDTH = 5
-DLP_Y_SIZE =600
-DLP_X_SIZE =800
-
-
+# BORDERWIDTH = 5
+# DLP_Y_SIZE =600
+# DLP_X_SIZE =800
 
 
 class App_DLPcontrol(tk.Tk):

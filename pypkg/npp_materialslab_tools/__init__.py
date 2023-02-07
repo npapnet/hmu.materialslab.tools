@@ -1,2 +1,2 @@
-from .testing_machine.testing_data import TestingData
+from .testing_machine.tensile_data import TensileData
 # from .testing_machine.appElasticityCalculator import ElasticityModulusCalcs

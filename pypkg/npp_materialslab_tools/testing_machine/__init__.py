@@ -1,1 +1,3 @@
 # from .appElasticityCalculator import ElasticityModulusCalcs
+from npp_materialslab_tools.testing_machine.tensile_data import TensileData
+from npp_materialslab_tools.testing_machine.specimen_classes import TensileSpecimenDimensions

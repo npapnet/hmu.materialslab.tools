@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 from matplotlib.widgets import Button
 
-from npp_materialslab_tools import TestingData
+from npp_materialslab_tools import TensileData
 
 
 class TensileTestApp():
@@ -25,10 +25,10 @@ class TensileTestApp():
     
         try:
             self._FNAME = pathlib.Path('data')/"new XY 0 ABS_CNT 2%.csv"
-            self._tdobj = TestingData(fname=self._FNAME)
+            self._tdobj = TensileData(fname=self._FNAME)
         except:
             self._FNAME = pathlib.Path('testingMachine/data')/"new XY 0 ABS_CNT 2%.csv"
-            self._tdobj = TestingData(fname=self._FNAME)
+            self._tdobj = TensileData(fname=self._FNAME)
 
         self._prepare_figure()
         self.select_points()

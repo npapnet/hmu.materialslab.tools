@@ -1,6 +1,6 @@
 #%%
 import pathlib
-from dataclasses import dataclass
+# from dataclasses import dataclass
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,7 +8,7 @@ import pandas as pd
 
 
 # @dataclass
-class TestingData():
+class TensileData():
     """package for loading testing data from M2 machine
 
     process the data and generates 
@@ -55,11 +55,12 @@ class TestingData():
         return self._data
 
 
+
 #%%
 if __name__ == '__main__':
     FNAME = pathlib.Path('data')/"new XY 0 ABS_CNT 2%.csv"
     # %%
-    td = TestingData(fname=FNAME)
+    td = TensileData(fname=FNAME)
 
     # %%
 
