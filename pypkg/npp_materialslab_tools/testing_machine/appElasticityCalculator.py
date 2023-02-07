@@ -180,30 +180,41 @@ class ElasticityModulusCalculatorGUI(object):
 
     def _createTBs(self):
         '''
+
         Creates textBoxes and Reset button
+        plt.axes([x, y, dx, dy])
+        - x from lower left corner
+        - y from lower left corner
+        - dx horizontal width 
+        - dy Vertical width 
         '''
-        self.axbox1 = plt.axes([0.15, 0.12, 0.10, 0.05])
-        self.tbWidth = TextBox(self.axbox1, 'Width [mm]', initial='10.1')
-        self.axbox2 = plt.axes([0.5, 0.12, 0.10, 0.05])
-        self.tbThickness = TextBox(self.axbox2, 'Thickness [mm]', initial='3.1')
-        self.axbox3 = plt.axes([0.15, 0.02, 0.10, 0.05])
-        self.tbGaugeLength = TextBox(self.axbox3, 'G. Length [mm]', initial='90')
+
+        row1y,row2y =   0.12, 0.02
+        col1x, col2x, col3x, col4x = 0.15, 0.35, 0.65, 0.85
+        btnWidth, btnHeight = 0.10, 0.05
+
+        self.axWidthBtn = plt.axes([col1x, row1y, btnWidth, btnHeight])
+        self.tbWidth = TextBox(self.axWidthBtn, 'Width [mm]', initial='10.1')
+        self.axThicknessBtn = plt.axes([col2x, row1y, btnWidth, btnHeight])
+        self.tbThickness = TextBox(self.axThicknessBtn, 'Thickness [mm]', initial='3.1')
+        self.axGaugeLengthBtn = plt.axes([col1x, row2y, btnWidth, btnHeight])
+        self.tbGaugeLength = TextBox(self.axGaugeLengthBtn, 'G. Length [mm]', initial='90')
         
         self.tbWidth.on_submit(lambda event: self.computations())
         self.tbThickness.on_submit(lambda event: self.computations())
         
         # Reset button
-        self.axResetBtn = plt.axes([0.8, 0.10, 0.15, 0.05])
+        self.axResetBtn = plt.axes([col4x, row1y, btnWidth, btnHeight])
         self.btnReset = Button(self.axResetBtn, 'Reset')
         self.btnReset.on_clicked(lambda event: self.reset_SM())
 
         # Open new data set
-        self.axOpenNewFileBtn = plt.axes([0.5, 0.02, 0.15, 0.05])
+        self.axOpenNewFileBtn = plt.axes([col3x, row2y, btnWidth, btnHeight])
         self.btnNewFile = Button(self.axOpenNewFileBtn, 'New file')
         self.btnNewFile.on_clicked(lambda event: self.new_file())
 
         # append to file button
-        self.axAppendToFileBtn = plt.axes([0.8, 0.02, 0.15, 0.05])
+        self.axAppendToFileBtn = plt.axes([col4x, row2y, btnWidth, btnHeight])
         self.btnAppend = Button(self.axAppendToFileBtn, 'To File')
         self.btnAppend.on_clicked(lambda event: self.appendToFile())
 
@@ -298,8 +309,7 @@ class ElasticityModulusCalculatorGUI(object):
             # update the line positions
             self._points_collected[crsrID] = Cursor(self.ax, crsrID, x, y, indx)
             self._points_collected[crsrID].plot_cursor()
-            
-            self._sm  = 1
+            self._sm = 1
         elif self._sm == 1:
             crsrID  = self._sm+1
             x,y, indx = self._calc_x_y_ind(event.xdata, event.ydata)

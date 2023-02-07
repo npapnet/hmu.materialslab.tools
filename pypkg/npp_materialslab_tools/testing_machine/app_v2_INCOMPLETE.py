@@ -1,5 +1,8 @@
-
+#%%[markdown]
+# This is a version Point Selector2 (separating the selection process from the gui creation)
+#%% 
 import datetime
+import logging
 import pathlib
 from dataclasses import dataclass
 from tkinter import Tk
@@ -10,21 +13,24 @@ import numpy as np
 import pandas as pd
 from matplotlib.widgets import Button, TextBox
 from npp_materialslab_tools import TestingData
-from appElasticityCalculator import ElasticityModulusCalcs, SpecimenDimensions, Cursor
+from npp_materialslab_tools.testing_machine.appElasticityCalculator import (
+    Cursor, ElasticityModulusCalcs, SpecimenDimensions)
 
 DEVELOPMENT_FLAG = True
 DEVELOPMENT_FNAME = "testingMachine/data/new XY 0 ABS_CNT 2%.csv"  
 
+if DEVELOPMENT_FLAG:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.ERROR)
 class PointsSelector2():
     def __init__(self, fig, ax):
-        self._points_collected = {} # pseudo not required.
-        self._sm = 0
 
         self.fig = fig
         self.ax = ax
         self.fig.canvas.mpl_connect('button_press_event', self.mouse_click)
 
-        # self.reset_SM()
+        self.reset_SM()
         
     def reset_SM(self):
         ''' resets state machine status'''
@@ -32,8 +38,25 @@ class PointsSelector2():
         self._sm = 0
         # self.txt.set_text('')
 
-        self.ax.cla()
+        # self.ax.cla()
 
+    def _calc_x_y_ind(self, x_event, y_event ):
+        ''' calculates the x, y and index from the event data
+
+        It does that by finding the closest point.
+
+        Callers: mouse_click
+        '''
+        try:
+            line = self.ax.lines[0]
+            self.displacement = line.get_xdata()
+            self.F_Ns = line.get_ydata()
+            indx = min(np.searchsorted(self.displacement, x_event), len(self.displacement) - 1)
+            x = self.displacement[indx]
+            y = self.F_Ns[indx]
+            return x, y, indx   
+        except:
+            return 
 
     def mouse_click(self, event):
         ''' change the state machine on each click
@@ -43,10 +66,23 @@ class PointsSelector2():
             return
 
         # update state machine
-        if self._sm <= 2:
+        if self._sm == 0:
             crsrID  = self._sm+1
-            x,y, indx = event.xdata, event.ydata, self._sm
+            x,y, indx = self._calc_x_y_ind(event.xdata, event.ydata)
+            # update the line positions
+            self._points_collected[crsrID] = Cursor(self.ax, crsrID, x, y, indx)
+            self._points_collected[crsrID].plot_cursor()
+            self._sm = 1
+        elif self._sm == 1:
+            crsrID  = self._sm+1
+            x,y, indx = self._calc_x_y_ind(event.xdata, event.ydata)
+            # update the line positions
+            self._points_collected[crsrID] = Cursor(self.ax, crsrID, x, y, indx)
+            self._points_collected[crsrID].plot_cursor()
+            
+            self._sm = 2            
         if self._sm ==2:
+            logging.debug ("ready to plot")
             # self.computations()
             pass
         else:
@@ -78,7 +114,6 @@ class ElasticityModulusCalculatorGUIv2(object):
         self.load_data(filename=filename)
         self.create_plot()
         self.ps2 =  PointsSelector2(fig = self.fig, ax = self.ax)
-        # self._points_collected = {} # pseudo not required.
         
         self.ps2.reset_SM()
         
@@ -124,6 +159,7 @@ class ElasticityModulusCalculatorGUIv2(object):
 
     def create_plot(self):
         # text location in axes coords
+        self.ax.cla()
         self.ax.plot(self.displacement, self.F_Ns, 'o')
         self.ax.set_xlabel( 'Displacement [mm]')
         self.ax.set_ylabel( 'F[N]')
@@ -133,34 +169,44 @@ class ElasticityModulusCalculatorGUIv2(object):
     def _createTBs(self):
         '''
         Creates textBoxes and Reset button
+        plt.axes([x, y, dx, dy])
+        - x from lower left corner
+        - y from lower left corner
+        - dx horizontal width 
+        - dy Vertical width 
         '''
-        self.axbox1 = plt.axes([0.15, 0.12, 0.10, 0.05])
-        self.tbWidth = TextBox(self.axbox1, 'Width [mm]', initial='10.1')
-        self.axbox2 = plt.axes([0.5, 0.12, 0.10, 0.05])
-        self.tbThickness = TextBox(self.axbox2, 'Thickness [mm]', initial='3.1')
-        self.axbox3 = plt.axes([0.15, 0.02, 0.10, 0.05])
-        self.tbGaugeLength = TextBox(self.axbox3, 'G. Length [mm]', initial='90')
+
+        row1y,row2y =   0.12, 0.02
+        col1x, col2x, col3x, col4x = 0.15, 0.35, 0.65, 0.85
+        btnWidth, btnHeight = 0.10, 0.05
+
+        self.axWidthBtn = plt.axes([col1x, row1y, btnWidth, btnHeight])
+        self.tbWidth = TextBox(self.axWidthBtn, 'Width [mm]', initial='10.1')
+        self.axThicknessBtn = plt.axes([col2x, row1y, btnWidth, btnHeight])
+        self.tbThickness = TextBox(self.axThicknessBtn, 'Thickness [mm]', initial='3.1')
+        self.axGaugeLengthBtn = plt.axes([col1x, row2y, btnWidth, btnHeight])
+        self.tbGaugeLength = TextBox(self.axGaugeLengthBtn, 'G. Length [mm]', initial='90')
         
         self.tbWidth.on_submit(lambda event: self.computations())
         self.tbThickness.on_submit(lambda event: self.computations())
         
         # Reset button
-        self.axResetBtn = plt.axes([0.8, 0.10, 0.15, 0.05])
+        self.axResetBtn = plt.axes([col4x, row1y, btnWidth, btnHeight])
         self.btnReset = Button(self.axResetBtn, 'Reset')
         self.btnReset.on_clicked(self.on_reset)
 
-        # Reset button
-        self.axResetBtn = plt.axes([0.6, 0.10, 0.15, 0.05])
-        self.btnReset = Button(self.axResetBtn, 'computations')
-        self.btnReset.on_clicked(lambda event: self.computations())
+        # Computations  button
+        self.axComputationsBtn = plt.axes([col3x, row1y, btnWidth, btnHeight])
+        self.btnComputations = Button(self.axComputationsBtn, 'computations')
+        self.btnComputations.on_clicked(lambda event: self.computations())
 
         # Open new data set
-        self.axOpenNewFileBtn = plt.axes([0.5, 0.02, 0.15, 0.05])
+        self.axOpenNewFileBtn = plt.axes([col3x, row2y, btnWidth, btnHeight])
         self.btnNewFile = Button(self.axOpenNewFileBtn, 'New file')
         self.btnNewFile.on_clicked(lambda event: self.new_file())
 
         # append to file button
-        self.axAppendToFileBtn = plt.axes([0.8, 0.02, 0.15, 0.05])
+        self.axAppendToFileBtn = plt.axes([col4x, row2y, btnWidth, btnHeight])
         self.btnAppend = Button(self.axAppendToFileBtn, 'To File')
         self.btnAppend.on_clicked(lambda event: self.appendToFile())
 
@@ -208,8 +254,8 @@ class ElasticityModulusCalculatorGUIv2(object):
         E_GPa_pt = res['E_MPa_simple']
         E_GPa_lnr = res['E_MPa_lsq']
         #output to plot and console
-        start_ind = self._points_collected[1].indx
-        end_ind = self._points_collected[2].indx
+        start_ind = self.ps2._points_collected[1].indx
+        end_ind = self.ps2._points_collected[2].indx
         self._l_selected = self.ax.plot(self.displacement[start_ind:end_ind], self.F_Ns[start_ind:end_ind], 'r')
         self.txt = self.ax.text(0.7, 0.05, '', transform=self.ax.transAxes)
         self.txt.set_text('E = {:.2f}[Mpa]'.format (E_GPa_lnr))
