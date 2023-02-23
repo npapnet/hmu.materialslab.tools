@@ -1,3 +1,5 @@
+examples/imada_ut/img/*.bmp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
