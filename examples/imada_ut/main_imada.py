@@ -1,3 +1,4 @@
+#%%
 # this is based on 2017 Damien ANDRE pydic example
 # 
 #!/usr/bin/env python
@@ -35,10 +36,7 @@
 #  - pictures of the tensile test are located in the 'img' directory
 #  - for a better undestanding, please refer to the 'description.png' file
 #    that describes the tensile test 
-
-
-
-
+#%%
 # ====== IMPORTING MODULES
 from matplotlib import pyplot as plt
 import numpy as np
@@ -53,31 +51,43 @@ from npp_materialslab_tools.dic import pydic
 correl_wind_size = (80,80) # the size in pixel of the correlation windows
 correl_grid_size = (20,20) # the size in pixel of the interval (dx,dy) of the correlation grid
 
+# correl_wind_size = (16,16) # the size in pixel of the correlation windows
+# correl_grid_size = (4,4) # the size in pixel of the interval (dx,dy) of the correlation grid
 
 # read image series and write a separated result file 
-# pydic.init('./img/*.bmp', correl_wind_size, correl_grid_size, "result.dic")
+pydic.init(image_pattern='./img_png/*.png', 
+    win_size_px=correl_wind_size, 
+    grid_size_px=correl_grid_size, 
+    result_file="result.dic")
 
 
 # # and read the result file for computing strain and displacement field from the result file 
-# pydic.read_dic_file('result.dic', interpolation='spline', strain_type='cauchy', save_image=True, scale_disp=10, scale_grid=25, meta_info_file='img/meta-data.txt')
+pydic.read_dic_file(result_file='result.dic', 
+            interpolation='spline', 
+            strain_type='cauchy', 
+            save_image=True, 
+            scale_disp=10, 
+            scale_grid=25, 
+            meta_info_file='img_png/meta-data.txt')
 
 
 #  ====== OR RUN PYDIC TO COMPUTE DISPLACEMENT AND STRAIN FIELDS (WITH UNSTRUCTURED GRID OPTION)
 # note that you can't use the 'spline' or the 'raw' interpolation with unstructured grids 
 # please uncomment the next lines if you want to use the unstructured grid options instead of the aligned grid
-pydic.init('./img/*.png', 
-           win_size_px=correl_wind_size, 
-           grid_size_px=correl_grid_size, 
-           result_file="result.dic", 
-           unstructured_grid=(20,5))
-pydic.read_dic_file(result_file='result.dic', 
-                    interpolation='cubic', 
-                    save_image=True, 
-                    scale_disp=10, 
-                    scale_grid=25, 
-                    meta_info_file='img/meta-data.txt')
+# pydic.init('./img_png/*.png', 
+#            win_size_px=correl_wind_size, 
+#            grid_size_px=correl_grid_size, 
+#            result_file="result.dic", 
+#            unstructured_grid=(20,5))
 
+# pydic.read_dic_file(result_file='result.dic', 
+#                     interpolation='cubic', 
+#                     save_image=True, 
+#                     scale_disp=10, 
+#                     scale_grid=25, 
+#                     meta_info_file='img/meta-data.txt')
 
+#%%
 
 #  ====== RESULTS
 # Now you can go in the 'img/pydic' directory to see the results :

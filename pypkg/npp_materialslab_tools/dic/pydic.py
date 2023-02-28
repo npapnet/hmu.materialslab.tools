@@ -52,7 +52,8 @@ from scipy.interpolate import Rbf
 import scipy.interpolate
 import copy
 import os
-
+import logging
+# logging.basicConfig(level=logging.DEBUG)
 
 
 grid_list = [] # saving grid here
