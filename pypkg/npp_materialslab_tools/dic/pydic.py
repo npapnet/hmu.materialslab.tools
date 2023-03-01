@@ -57,40 +57,56 @@ from .pydicGrid import grid, draw_opencv
 # logging.basicConfig(level=logging.DEBUG)
 
 
-grid_list = [] # saving grid here
-
-
-          
+      
 def build_grid(area, num_point, *args, **kwargs):
-    xmin = area[0][0]; xmax = area[1][0]; dx = xmax - xmin
-    ymin = area[0][1]; ymax = area[1][1]; dy = ymax - ymin
-    point_surface = dx*dy/num_point; point_line = math.sqrt(point_surface)
-    ratio = 1. if not 'ratio' in kwargs else kwargs['ratio']
-    num_x = int(ratio*dx/point_line) + 1
-    num_y = int(ratio*dy/point_line) + 1
-    grid_x, grid_y = np.mgrid[xmin:xmax:num_x*1j, ymin:ymax:num_y*1j]
-    return grid(grid_x, grid_y, num_x, num_y)
+     """
+     TODO: Findout what are the callers for this function from the original repository
 
-  
+     Args:
+         area (_type_): _description_
+         num_point (_type_): _description_
+
+     Returns:
+         _type_: _description_
+     """    
+     xmin = area[0][0]; xmax = area[1][0]; dx = xmax - xmin
+     ymin = area[0][1]; ymax = area[1][1]; dy = ymax - ymin
+     point_surface = dx*dy/num_point; point_line = math.sqrt(point_surface)
+     ratio = 1. if not 'ratio' in kwargs else kwargs['ratio']
+     num_x = int(ratio*dx/point_line) + 1
+     num_y = int(ratio*dy/point_line) + 1
+     grid_x, grid_y = np.mgrid[xmin:xmax:num_x*1j, ymin:ymax:num_y*1j]
+     return grid(grid_x, grid_y, num_x, num_y)
 
 def write_result(result_file, image, points):
+     """used by init to write the data for a file.
+
+     Args:
+         result_file (_type_): _description_
+         image (_type_): _description_
+         points (_type_): _description_
+     """     
      result_file.write(image + '\t')
      for p in points:
           result_file.write(str(p[0]) + ',' + str(p[1]) + '\t')
      result_file.write('\n')
     
-def init(image_pattern, win_size_px, grid_size_px, result_file, area_of_intersest=None, *args, **kwargs):
+def init(image_pattern, win_size_px, grid_size_px, result_file, area_of_interest=None, *args, **kwargs):
      """the init function is a simple wrapper function that allows to parse a 
 sequence of images. The displacements are computed and a result file is written
- - the first arg 'image_pattern' is the path where your image are located 
- - the second arg 'win_size_px' is the size in pixel of your correlation windows
- - the third arg 'grid_size_px' is the size of your correlation grid
- - the fourth arg 'result_file' locates your result file 
- - the optional argument 'area_of_intersest'gives the area of interset in (size_x,size_y) format. 
-   if you don't give this argument, a windows with the first image is displayed. 
-   You can pick in this picture manually your area of intersest.
- - you can use the named argument 'unstructured_grid=(val1,val2)' to let the 'goodFeaturesToTrack' 
-   opencv2 algorithm. Note that you can't use the 'spline' or the 'raw' interpolation method."""
+
+     Args:
+         image_pattern (str): the path and pattern describing where your image are located 
+         win_size_px (list):  the size in pixel of your correlation windows.Given as a (dx, dy) tuple
+         grid_size_px (list): the size of your correlation grid. Given as a (dx, dy) tuple
+         result_file (str): the name of the result file
+         area_of_interest (_type_, optional): gives the area of interset in (size_x,size_y) format. Defaults to None.
+                         if you don't give this argument, a windows with the first image is displayed. 
+                         You can pick in this picture manually your area of intersest.
+
+     Parsed kwargs:
+          unstructured_grid=(val1,val2) : to let the 'goodFeaturesToTrack' opencv2 algorithm. Note that you can't use the 'spline' or the 'raw' interpolation method.
+     """
 
      
      img_list = sorted(glob.glob(image_pattern))
@@ -98,12 +114,13 @@ sequence of images. The displacements are computed and a result file is written
      img_ref = cv2.imread(img_list[0], 0)
      
      # choose area of interset 
-     if (area_of_intersest is None):
-          print("please pick your area of intersest on the picture")
-          area_of_intersest = pick_area_of_interest(img_ref)
+     if (area_of_interest is None):
+          print("please pick your area of interest on the picture")
+          print("Press 'c' to proceed")
+          area_of_interest = pick_area_of_interest(img_ref)
 
      # init correlation grid
-     area     = area_of_intersest
+     area     = area_of_interest
 
      points   = []
      points_x = np.float64(np.arange(area[0][0], area[1][0], grid_size_px[0]))
@@ -185,10 +202,6 @@ sequence of images. The displacements are computed and a result file is written
      f.close()
 
 
-     
-
-
-
 def read_dic_file(result_file, *args, **kwargs):
      """the read_dic_file is a simple wrapper function that allows to parse a dic 
 file (given by the init() function) and compute the strain fields. The displacement fields 
@@ -220,6 +233,7 @@ These results are :
    can switch to log or 2nd order strain if you expect high strains. 
  - 'rm_rigid_body_transform' for removing rigid body displacement (default is true)
 """
+     grid_list = [] # saving grid here
      # treat optional args
      interpolation= 'raw' if not 'interpolation' in kwargs else kwargs['interpolation']
      save_image   = True if not 'save_image' in kwargs else kwargs['save_image']
@@ -318,6 +332,7 @@ These results are :
                else:
                     mygrid.add_meta_info(meta_info.get(img))
                     print('add meta info', meta_info.get(img))
+     return grid_list
                     
                
 
@@ -331,50 +346,61 @@ def compute_displacement(point, pointf):
         values.append((pt1[0]-pt0[0], pt1[1]-pt0[1]))
     return values
 
+# Move those two into the 
 area = []
 cropping = False
 
 def pick_area_of_interest(PreliminaryImage):
-    global area, cropping
-    image = cv2.putText(PreliminaryImage, "Pick the area of interest (left click + move mouse) and press 'c' button to continue", (50,50), cv2.FONT_HERSHEY_SIMPLEX, 1,(255,255,255),4)
-        
-    def click_and_crop(event, x, y, flags, param):
-        global area, cropping
-        if event == cv2.EVENT_LBUTTONDOWN:
-            area = [(x, y)]
-            cropping = True
- 
-        elif event == cv2.EVENT_LBUTTONUP:
-            area.append((x, y))
-            cropping = False
- 
-            # draw a rectangle around the region of interest
-            Newimage = cv2.rectangle(image, area[0], area[1], (0, 255, 0), 2)
-            cv2.imshow('image', Newimage)
-            
+     """usd by init. Picks area of interest from an image
+     if data are not selected
 
-    clone = image.copy()
-    cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-    cv2.resizeWindow('image', image.shape[1], image.shape[0])
-    cv2.setMouseCallback("image", click_and_crop)
- 
-    # keep looping until the 'c' key is pressed
-    while True:
-        # display the image and wait for a keypress
-        cv2.imshow("image", image)
-        key = cv2.waitKey(1) & 0xFF
- 
-        # if the 'r' key is pressed, reset the cropping region
-        if key == ord("r"):
-            image = clone.copy()
- 
-            # if the 'c' key is pressed, break from the loop
-        elif key == ord("c"):
-            break
-    return area
+
+     Args:
+         PreliminaryImage (_type_): _description_
+
+     Returns:
+         _type_: _description_
+     """    
+     global area, cropping
+     image = cv2.putText(PreliminaryImage, "Pick the area of interest (left click + move mouse) and press 'c' button to continue", (50,50), cv2.FONT_HERSHEY_SIMPLEX, 1,(255,255,255),4)
+          
+     def click_and_crop(event, x, y, flags, param):
+          global area, cropping
+          if event == cv2.EVENT_LBUTTONDOWN:
+               area = [(x, y)]
+               cropping = True
+
+          elif event == cv2.EVENT_LBUTTONUP:
+               area.append((x, y))
+               cropping = False
+
+               # draw a rectangle around the region of interest
+               Newimage = cv2.rectangle(image, area[0], area[1], (0, 255, 0), 2)
+               cv2.imshow('image', Newimage)
+               
+     clone = image.copy()
+     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+     cv2.resizeWindow('image', image.shape[1], image.shape[0])
+     cv2.setMouseCallback("image", click_and_crop)
+
+     # keep looping until the 'c' key is pressed
+     while True:
+          # display the image and wait for a keypress
+          cv2.imshow("image", image)
+          key = cv2.waitKey(1) & 0xFF
+
+          # if the 'r' key is pressed, reset the cropping region
+          if key == ord("r"):
+               image = clone.copy()
+
+               # if the 'c' key is pressed, break from the loop
+          elif key == ord("c"):
+               break
+     return area
 
 def remove_point_outside(points, area,  *args, **kwargs):
      shape = 'box' if not 'shape' in kwargs else kwargs['shape']
+     # what is shape doing here?
      xmin = area[0][0]; xmax = area[1][0]
      ymin = area[0][1]; ymax = area[1][1]
      res = []
@@ -386,6 +412,15 @@ def remove_point_outside(points, area,  *args, **kwargs):
 
 
 def compute_disp_and_remove_rigid_transform(p1, p2):
+     """_summary_
+
+     Args:
+         p1 (_type_): _description_
+         p2 (_type_): _description_
+
+     Returns:
+         _type_: _description_
+     """     
      A = []
      B = []
      removed_indices = []
@@ -397,8 +432,6 @@ def compute_disp_and_remove_rigid_transform(p1, p2):
                A.append(p1[i])
                B.append(p2[i])
           
-
-     
      A = np.matrix(A)
      B =  np.matrix(B)
      assert len(A) == len(B)

@@ -72,13 +72,13 @@ class Plot:
 
 def draw_opencv(image, *args, **kwargs):
     """A function with a lot of named argument to draw opencv image
- - 'point' arg must be an array of (x,y) point
- - 'p_color' arg to choose the color of point in (r,g,b) format
- - 'pointf' to draw lines between point and pointf, pointf 
-   must be an array of same lenght than the point array
- - 'l_color' to choose the color of lines
- - 'grid' to display a grid, the grid must be a grid object
- - 'gr_color' to choose the grid color"""
+     - 'point' arg must be an array of (x,y) point
+     - 'p_color' arg to choose the color of point in (r,g,b) format
+     - 'pointf' to draw lines between point and pointf, pointf 
+     must be an array of same lenght than the point array
+     - 'l_color' to choose the color of lines
+     - 'grid' to display a grid, the grid must be a grid object
+     - 'gr_color' to choose the grid color"""
     if type(image) == str :
          image = cv2.imread(image, 0)
 

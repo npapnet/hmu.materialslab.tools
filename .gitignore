@@ -1,4 +1,5 @@
 examples/imada_ut/img/*.bmp
+examples/imada_ut/img_png/pydic/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
