@@ -6,6 +6,7 @@
 from matplotlib import pyplot as plt
 from scipy import stats
 from npp_materialslab_tools.dic import pydic
+from npp_materialslab_tools.dic.pydicGrid import grid
 
 # %%
 # loading the analysis result file
@@ -25,3 +26,4 @@ last_grid.plot_field(last_grid.strain_yy, 'yy strain')
 plt.show()
 
 # %%
+assert isinstance(last_grid, grid)
