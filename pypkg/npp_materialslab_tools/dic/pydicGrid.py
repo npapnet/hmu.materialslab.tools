@@ -151,9 +151,14 @@ class grid:
 method to treat and post-treat results"""
      
      def __init__(self, grid_x, grid_y, size_x, size_y):
-          """Construct a new grid objet with x coordinate (grid_x), 
-y coordinate (grid_y), number of point along x (size_x) and 
-number of point along y (size_y)"""
+          """Construct a new grid object with 
+
+          Args:
+              grid_x (np.ndarray): x coordinate (grid_x) for each marker
+              grid_y (np.ndarray): y coordinate (grid_x) for each marker
+              size_x (int): number of point along x (size_x)
+              size_y (int): number of point along y (size_y)
+          """          
           self.grid_x = grid_x
           self.grid_y = grid_y
           self.size_x = size_x
@@ -165,8 +170,19 @@ number of point along y (size_y)"""
           self.strain_xy = None
 
      def add_raw_data(self, winsize, reference_image, image, reference_point, correlated_point, disp):
-          """Save raw data to the current grid object. These raw data are used as initial data 
-for digital image correlation"""
+          """Save raw data to the current grid object. 
+          
+          These raw data are used as initial data 
+          for digital image correlation
+
+          Args:
+              winsize (tupe): the size in pixel of the correlation windows
+              reference_image (str): filename of the reference image
+              image (sr): filename of the current image
+              reference_point (np.ndarray[(size_x*size_y),2]): Reference coordinates for each marker 
+              correlated_point (np.ndarray[(size_x*size_y),2]): Current coordinate for each marker
+              disp (list of tuples): ???? 
+          """          
 
           self.winsize = winsize
           self.reference_image = reference_image
@@ -272,7 +288,9 @@ for digital image correlation"""
 
 
      def plot_field(self, field, title):
-          """Plot the chosen field such as strain_xx, disp_xx, etc. in a matplotlib interactive map"""
+          """Plot the chosen field 
+          such as strain_xx, disp_xx, etc. 
+          in a matplotlib interactive map"""
           image_ref = cv2.imread(self.image, 0)
           Plot(image_ref, self, field, title)
           
@@ -324,7 +342,8 @@ for digital image correlation"""
 
 
      def compute_strain_field(self):
-          """Compute strain field from displacement thanks to numpy"""
+          """Compute strain field from 
+          displacement thanks to numpy"""
           #get strain fields
           dx = self.grid_x[1][0] - self.grid_x[0][0]
           dy = self.grid_y[0][1] - self.grid_y[0][0]
@@ -339,7 +358,10 @@ for digital image correlation"""
           
           
      def compute_strain_field_DA(self):
-          """Compute strain field from displacement field thanks to a custom method for large strain"""
+          """Compute strain field 
+          from displacement field 
+          thanks to a custom method 
+          for large strain"""
           self.strain_xx = self.disp_x.copy(); self.strain_xx.fill(np.NAN)
           self.strain_xy = self.disp_x.copy(); self.strain_xy.fill(np.NAN)
           self.strain_yy = self.disp_x.copy(); self.strain_yy.fill(np.NAN)
@@ -372,7 +394,9 @@ for digital image correlation"""
                  self.strain_xy[i,j] = .5*(du_dy + dv_dx + du_dx*du_dy + dv_dx*dv_dy)
 
      def compute_strain_field_log(self):
-          """Compute strain field from displacement field for large strain (logarithmic strain)"""
+          """Compute strain field 
+          from displacement field 
+          for large strain (logarithmic strain)"""
           self.strain_xx = self.disp_x.copy(); self.strain_xx.fill(np.NAN)
           self.strain_xy = self.disp_x.copy(); self.strain_xy.fill(np.NAN)
           self.strain_yy = self.disp_x.copy(); self.strain_yy.fill(np.NAN)
@@ -410,7 +434,9 @@ for digital image correlation"""
                  self.strain_xy[i,j] = .5*deflog[0,1]
 
      def average(self, value, x_range, y_range):
-          """Get the average value in the specified x,y range of the given field"""
+          """Get the average value in 
+          the specified x,y range 
+          of the given field"""
           val = []
           for x in x_range:
                for y in y_range:
