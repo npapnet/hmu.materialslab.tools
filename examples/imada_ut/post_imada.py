@@ -5,6 +5,7 @@
 # ====== IMPORTING MODULES
 from matplotlib import pyplot as plt
 from scipy import stats
+import pandas as pd
 from npp_materialslab_tools.dic import pydic
 from npp_materialslab_tools.dic.pydicGrid import grid
 
@@ -27,3 +28,32 @@ plt.show()
 
 # %%
 assert isinstance(last_grid, grid)
+# %%
+print(last_grid.size_x)
+print(last_grid.size_y)
+print(last_grid.size_y)
+# %%
+
+last_grid.strain_xx
+# %%
+last_grid.strain_xx.mean(), last_grid.strain_xx.std()
+# %%
+# show as image
+plt.figure(figsize=(last_grid.size_x,last_grid.size_y))
+plt.contourf(last_grid.strain_xx.T)
+# %%
+adic =[]
+for j, gr in enumerate(grid_listres):
+    adic.append({"id":j+1, "strain_xx":gr.strain_xx.mean(), "strain_xx_std": gr.strain_xx.std()})
+
+df = pd.DataFrame(adic)
+#%%
+last_grid.meta_info
+
+
+
+# %%
+df.strain_xx.plot()
+# %%
+df[:-1].plot(kind="scatter", x='id', y='strain_xx', yerr='strain_xx_std')
+# %%
