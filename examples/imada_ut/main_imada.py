@@ -26,6 +26,8 @@
 
 
 
+import cv2
+import numpy as np
 # ====== INTRODUCTION
 # The tensile example shows how to use the pydic module to compute
 # the young's modulus and the poisson's ratio from picture captured
@@ -39,12 +41,8 @@
 #%%
 # ====== IMPORTING MODULES
 from matplotlib import pyplot as plt
-import numpy as np
 from scipy import stats
-import cv2
 from npp_materialslab_tools.dic import pydic
-
-
 
 
 #  ====== RUN PYDIC TO COMPUTE DISPLACEMENT AND STRAIN FIELDS (STRUCTURED GRID)
@@ -62,7 +60,7 @@ pydic.init(image_pattern='./img_png/*.png',
 
 
 # # and read the result file for computing strain and displacement field from the result file 
-pydic.read_dic_file(result_file='result.dic', 
+grid_listres = pydic.read_dic_file(result_file='result.dic', 
             interpolation='spline', 
             strain_type='cauchy', 
             save_image=True, 
@@ -97,9 +95,9 @@ pydic.read_dic_file(result_file='result.dic',
 
 
 # ======= STANDARD POST-TREATMENT : STRAIN FIELD MAP PLOTTING
-# the pydic.grid_list is a list that contains all the correlated grids (one per image)
+# the pydic.grid_list (grid_listres) is a list that contains all the correlated grids (one per image)
 # the grid objects are the main objects of pydic  
-last_grid = pydic.grid_list[-1]
+last_grid = grid_listres[-1]
 last_grid.plot_field(last_grid.strain_xx, 'xx strain')
 last_grid.plot_field(last_grid.strain_yy, 'yy strain')
 plt.show()
@@ -110,7 +108,7 @@ plt.show()
 # ======== NON-STANDARD POST-TREATMENT : COMPUTE ELASTIC CONSTANTS (E & Nu)
 
 # extract force from meta-data file 
-force = np.array([float(x.meta_info['force(N)']) for x in pydic.grid_list])
+force = np.array([float(x.meta_info['force(N)']) for x in grid_listres])
 
 # compute the main normal stress with this force 
 sample_width     = 0.012
@@ -121,13 +119,13 @@ stress = force/(sample_width * sample_thickness)
 # now extract the main average strains on xx and yy
 # - first, we need to reduce the interest zone where the average values are computed
 
-test = pydic.grid_list[0].size_x/4
+test = grid_listres[0].size_x/4
 
-x_range = range(int(pydic.grid_list[0].size_x/4), int(3*pydic.grid_list[0].size_x/4)) 
-y_range = range(int(pydic.grid_list[0].size_y/4), int(3*pydic.grid_list[0].size_y/4))
+x_range = range(int(grid_listres[0].size_x/4), int(3*grid_listres[0].size_x/4)) 
+y_range = range(int(grid_listres[0].size_y/4), int(3*grid_listres[0].size_y/4))
 # - use grid.average method to compute the average values of the xx and yy strains
-ave_strain_xx = np.array([grid.average(grid.strain_xx, x_range, y_range) for grid in pydic.grid_list])
-ave_strain_yy = np.array([grid.average(grid.strain_yy, x_range, y_range) for grid in pydic.grid_list])
+ave_strain_xx = np.array([grid.average(grid.strain_xx, x_range, y_range) for grid in grid_listres])
+ave_strain_yy = np.array([grid.average(grid.strain_yy, x_range, y_range) for grid in grid_listres])
 
 
 

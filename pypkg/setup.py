@@ -3,6 +3,25 @@ import setuptools
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+requirements = [
+    #'opencv',
+    'scipy',
+    'numpy',
+    'matplotlib',
+    'seaborn',
+    'pandas',
+    'openpyxl',
+    'ipykernel',
+    'jupyter'
+ ]
+
+test_requirements = [
+    'pytest',
+    # 'pytest-pep8',
+    # 'pytest-cov',
+]
+
+
 setuptools.setup(
     name="npp_materialslab_tools", # Replace with your own username
     version="0.0.1",
@@ -18,5 +37,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    install_requires=requirements,
+    tests_require=test_requirements,
     python_requires='>=3.8',
 )
