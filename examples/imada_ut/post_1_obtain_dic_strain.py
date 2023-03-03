@@ -71,6 +71,14 @@ dfres = obtainStrainCurve(grid_list=grid_listres)
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 dfres.to_excel(OUTPUT_DIR/"myexcel.xlsx")
+#%% [markdown]
+# TODO: see below
+#
+# At this point it is still necessary to add the data from _image_times.txt in the columns excel. 
+# 
+# this ought to be automatic. 
+
+
 #%%
 last_grid.meta_info
 
