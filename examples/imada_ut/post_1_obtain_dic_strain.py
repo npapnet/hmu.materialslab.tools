@@ -49,7 +49,15 @@ last_grid.strain_xx.mean(), last_grid.strain_xx.std()
 plt.figure(figsize=(last_grid.size_x,last_grid.size_y))
 plt.contourf(last_grid.strain_xx.T)
 # %%
-def obtainStrainCurve(grid_list):
+def obtainStrainCurve(grid_list)->pd.DataFrame:
+    """this is a fucntion to obtain 
+
+    Args:
+        grid_list (list): List of grids 
+
+    Returns:
+        pd.DataFrame: Dataframe with "id", "image_fname", "e_xx", "e_xx_std","e_yy", "e_yy_std"
+    """    
     adic =[]
     for j, gr in enumerate(grid_list):
         adic.append({"id":j+1, "image_fname": gr.image,

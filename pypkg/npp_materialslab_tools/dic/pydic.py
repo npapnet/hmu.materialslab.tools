@@ -334,8 +334,7 @@ These results are :
                     print('add meta info', meta_info.get(img))
      return grid_list
                     
-               
-
+          
 
 def compute_displacement(point, pointf):
     """To compute a displacement between two point arrays"""
@@ -346,12 +345,13 @@ def compute_displacement(point, pointf):
         values.append((pt1[0]-pt0[0], pt1[1]-pt0[1]))
     return values
 
-# Move those two into the 
+# TODO: Move those two into the pick_area_of_interest
+# this should remove the need for 
 area = []
-cropping = False
+cropping = False # I don't see much use in the cropping flag. 
 
 def pick_area_of_interest(PreliminaryImage):
-     """usd by init. Picks area of interest from an image
+     """used by init. Picks area of interest from an image
      if data are not selected
 
 
