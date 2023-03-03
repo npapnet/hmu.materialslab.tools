@@ -62,7 +62,7 @@ def obtainStrainCurve(grid_list)->pd.DataFrame:
     for j, gr in enumerate(grid_list):
         adic.append({"id":j+1, "image_fname": gr.image,
                      "e_xx":gr.strain_xx.mean(), "e_xx_std": gr.strain_xx.std(),
-                     "e_yy":gr.strain_xx.mean(), "e_yy_std": gr.strain_yy.std()})
+                     "e_yy":gr.strain_yy.mean(), "e_yy_std": gr.strain_yy.std()})
 
     df = pd.DataFrame(adic)
     return df

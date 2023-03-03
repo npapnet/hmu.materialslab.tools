@@ -10,6 +10,7 @@ requirements = [
     'matplotlib',
     'seaborn',
     'pandas',
+    'openpyxl',
     'ipykernel',
     'jupyter'
  ]

@@ -31,6 +31,7 @@ Activate the new conda environment and install the following:
 > conda install opencv numpy scipy
 > conda install matplotlib  pandas seaborn
 > conda install ipython jupyter
+> conda install openpyxl
 ```
 
 
