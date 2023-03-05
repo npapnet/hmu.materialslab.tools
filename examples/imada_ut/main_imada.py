@@ -66,7 +66,7 @@ grid_listres = pydic.read_dic_file(result_file='result.dic',
             save_image=True, 
             scale_disp=10, 
             scale_grid=25, 
-            meta_info_file='img_png/meta-data.txt')
+            meta_info_file='img_png/_meta-data.txt')
 
 
 #  ====== OR RUN PYDIC TO COMPUTE DISPLACEMENT AND STRAIN FIELDS (WITH UNSTRUCTURED GRID OPTION)
@@ -86,62 +86,3 @@ grid_listres = pydic.read_dic_file(result_file='result.dic',
 #                     meta_info_file='img/meta-data.txt')
 
 #%%
-
-#  ====== RESULTS
-# Now you can go in the 'img/pydic' directory to see the results :
-# - the 'disp', 'grid' and 'marker' directories contain image files
-# - the 'result' directory contain raw text csv file where displacement and strain fields are written  
-
-
-
-# ======= STANDARD POST-TREATMENT : STRAIN FIELD MAP PLOTTING
-# the pydic.grid_list (grid_listres) is a list that contains all the correlated grids (one per image)
-# the grid objects are the main objects of pydic  
-last_grid = grid_listres[-1]
-last_grid.plot_field(last_grid.strain_xx, 'xx strain')
-last_grid.plot_field(last_grid.strain_yy, 'yy strain')
-plt.show()
-
-
-
-
-# ======== NON-STANDARD POST-TREATMENT : COMPUTE ELASTIC CONSTANTS (E & Nu)
-
-# extract force from meta-data file 
-force = np.array([float(x.meta_info['force(N)']) for x in grid_listres])
-
-# compute the main normal stress with this force 
-sample_width     = 0.012
-sample_thickness = 0.002
-stress = force/(sample_width * sample_thickness)
-
-
-# now extract the main average strains on xx and yy
-# - first, we need to reduce the interest zone where the average values are computed
-
-test = grid_listres[0].size_x/4
-
-x_range = range(int(grid_listres[0].size_x/4), int(3*grid_listres[0].size_x/4)) 
-y_range = range(int(grid_listres[0].size_y/4), int(3*grid_listres[0].size_y/4))
-# - use grid.average method to compute the average values of the xx and yy strains
-ave_strain_xx = np.array([grid.average(grid.strain_xx, x_range, y_range) for grid in grid_listres])
-ave_strain_yy = np.array([grid.average(grid.strain_yy, x_range, y_range) for grid in grid_listres])
-
-
-
-# now compute Young's modulus thanks to scipy linear regression
-E, intercept, r_value, p_value, std_err = stats.linregress(ave_strain_xx, stress)
-# and compute Poisson's ratio thanks to scipy linear regression
-Nu, intercept, r_value, p_value, std_err = stats.linregress(ave_strain_xx, -ave_strain_yy)
-
-
-
-# and print results !
-print ("\nThe computed elastic constants are :")
-print ("  => Young's modulus E={:.2f} GPa".format(E*1e-9))
-print ("  => Poisson's ratio Nu={:.2f}".format(Nu))
-
-
-
-# enjoy !
-# damien.andre@unilim.fr

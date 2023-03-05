@@ -4,9 +4,10 @@
 #%%
 import pandas as pd
 import pathlib
-DATADIR = pathlib.Path('img-bmp')
-INPUTFILE = DATADIR /"_image_times.txt"
-OUTPUTFILE = DATADIR /"meta-data.txt"
+
+IMG_DIR = pathlib.Path('img_png')
+INPUTFILE = IMG_DIR /"_image_times.txt"
+OUTPUTFILE = IMG_DIR /"_meta-data.txt"
 
 
 # %%

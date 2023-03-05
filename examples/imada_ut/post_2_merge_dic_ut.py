@@ -9,11 +9,14 @@ from matplotlib import pyplot as plt
 from npp_materialslab_tools.dic import pydic
 from npp_materialslab_tools.dic.pydicGrid import grid
 import logging
-logging.basicConfig(level = logging.DEBUG)
+# logging.basicConfig(level = logging.DEBUG)
+logging.basicConfig(level = logging.ERROR)
 
+
+TENSILEDATA_DIR = pathlib.Path("data_tensile")
+INFILE_UT = TENSILEDATA_DIR/"1mm_5% overlap Infill.csv"
 OUTPUT_DIR = pathlib.Path("output")
-INFILE_UT = OUTPUT_DIR/"1mm_100 overlap infill.csv"
-INFILE_DIC = OUTPUT_DIR/"myexcel-withTimes.xlsx"
+INFILE_DIC = OUTPUT_DIR/"myexcel.xlsx"
 
 # %%
 
@@ -52,24 +55,52 @@ df_ut.plot.scatter(x="time_s", y="force_N")
 # Read dic file
 # %%
 
-df_dico = pd.read_excel(INFILE_DIC, index_col=0, usecols="B,D:G,I")
+df_dico = pd.read_excel(INFILE_DIC, index_col=0, usecols="B,D:G,H")
 df_dico.head()
 
 #%%
-# Select subset
+# Select subset for dic-analysis
 index_start = 0
 index_end = -1
 df_dic = df_dico.iloc[index_start:index_end]
 df_dic.tail()
 # %%
-time_offset = 1.7
-df_dic["time_synced"] = df_dic["elapsed time"]-time_offset
-fig, axs = plt.subplots(ncols=1,nrows=1,sharex=True)
-axs = [axs]
-axs[0].plot(df_ut.time_s,df_ut.force_N/df_ut.force_N.max(), '.', label ="Normalised Force")
-axs[0].plot(df_dic["time_synced"][:-1], df_dic.e_xx[:-1]/df_dic.e_xx[:-1].max(), '.',label ="Normalised strain ")
-plt.xlabel("Time (s)")
-plt.title(f"Normalised Forces (from Imada) and Strains (from dic)\n Used to determine time offset: {time_offset} (s)")
+# I could use cross-correlation but this would require similar timestep. 
+def plot_synced_graph(time_offset, dic_df:pd.DataFrame, ut_df:pd.DataFrame):
+    """plots the dic and tensile data to see if they correlate well
+    
+    Two plots are made:
+    - one plot with the normalised force and the normalised strain
+    - plot:
+        - the force diff normalised wrt abs(max(force diff)
+        - the strain diff normalised wrt abs(max(strain diff))
+
+    Args:
+        time_offset (float): Time offset in s
+        dic_df (pd.DataFrame): dataframe obtained from dic
+        ut_df (pd.DataFrame): dataframe obtained from imada
+    """    
+    # time_offset = 1.55
+    dic_df["time_synced"] = dic_df["time(s)"]-time_offset
+    # axs = [axs]
+    ts_ut = ut_df.time_s
+    Fs_ut = ut_df.force_N
+    ts_dic = dic_df["time_synced"]
+    exx_dic = dic_df.e_xx
+    fig, axs = plt.subplots(ncols=1,nrows=2,sharex=True)
+
+    # plot 1
+    axs[0].plot(ts_ut, Fs_ut/Fs_ut.max(), '.', label ="Normalised Force")
+    axs[0].plot(ts_dic[:-1], exx_dic[:-1]/exx_dic[:-1].max(), '.',label ="Normalised strain ")
+    axs[0].set_title(f"Normalised Forces (from Imada) and Strains (from dic)\n Used to determine time offset: {time_offset} (s)")
+
+    # plot 2 with normalised diffs (the  )
+    axs[1].plot(ts_ut[:-1],np.abs(np.diff(Fs_ut))/np.abs(np.diff(Fs_ut)).max(), label ="force diff")
+    axs[1].plot(ts_dic[:-1], np.abs(np.diff(exx_dic))/np.abs(np.diff(exx_dic)).max(),label ="Normalised strain ")
+    axs[1].set_xlabel("Time (s)")
+
+time_offset = 1.55
+plot_synced_graph(time_offset, dic_df=df_dic, ut_df=df_ut)
 # %%
 fig, axs = plt.subplots(ncols=1,nrows=2,sharex=True)
 
@@ -77,7 +108,7 @@ axs[0].plot(df_ut.time_s,df_ut.force_N, '.', label ="Normalised Force")
 axs[1].plot(df_dic["time_synced"][:-1], df_dic.e_xx[:-1], '.',label ="Normalised strain ")
 axs[1].set_xlabel("Time (s)")
 axs[0].set_ylabel("Force (N)")
-axs[1].set_ylabel("Strain $e_{xx}$ ()")
+# axs[1].set_ylabel("Strain $e_{xx}$ ()")
 
 # plt.title("Normalised Forces (from Imada) and Strains (from dic)\n Used to match the correct time offset")
 

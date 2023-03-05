@@ -14,6 +14,8 @@ from npp_materialslab_tools.dic.pydicGrid import grid
 
 
 OUTPUT_DIR = pathlib.Path("output")
+UTDATA = pathlib.Path("data_tensile")/"1mm_5% overlap Infill.csv"
+IMG_DIR = pathlib.Path("img_png")
 # %%
 # loading the analysis result file
 
@@ -23,7 +25,7 @@ grid_listres = pydic.read_dic_file(result_file='result.dic',
             save_image=True, 
             scale_disp=10, 
             scale_grid=25, 
-            meta_info_file='img_png/meta-data.txt')
+            meta_info_file=IMG_DIR/'_meta-data.txt')
 
 # %%
 
@@ -60,17 +62,23 @@ def obtainStrainCurve(grid_list)->pd.DataFrame:
     """    
     adic =[]
     for j, gr in enumerate(grid_list):
-        adic.append({"id":j+1, "image_fname": gr.image,
+        adic.append({"id":j+1, "file": pathlib.Path(gr.image).name,
                      "e_xx":gr.strain_xx.mean(), "e_xx_std": gr.strain_xx.std(),
                      "e_yy":gr.strain_yy.mean(), "e_yy_std": gr.strain_yy.std()})
 
+    # dfres.image_fname = dfres.image_fname.apply(lambda x:pathlib.Path(x).name)
     df = pd.DataFrame(adic)
     return df
 
-dfres = obtainStrainCurve(grid_list=grid_listres)
+df_dic = obtainStrainCurve(grid_list=grid_listres)
 
+#%%
+df_img_meta = pd.read_csv(IMG_DIR/'_meta-data.txt', sep="\t")
+
+df_dic_tot = pd.merge(df_dic,df_img_meta,  how="inner", on="file")
+#%%
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-dfres.to_excel(OUTPUT_DIR/"myexcel.xlsx")
+df_dic_tot.to_excel(OUTPUT_DIR/"myexcel.xlsx")
 #%% [markdown]
 # TODO: see below
 #
@@ -85,7 +93,7 @@ last_grid.meta_info
 
 
 # %%
-df.strain_xx.plot()
+df_dic.e_xx.plot()
 # %%
-df[:-1].plot(kind="scatter", x='id', y='strain_xx', yerr='strain_xx_std')
+df_dic[:-1].plot(kind="scatter", x='id', y='e_xx', yerr='e_xx_std')
 # %%

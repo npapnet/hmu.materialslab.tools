@@ -6,7 +6,7 @@ Mainly is used for documenting the TODO list.
 
 # TODOList
 ## DIC 
-- PRIORITY: when the DIC analsysis xlsx file is created, merge the meta-data info with the dic analysis results. 
+- move result.dic file inside the output
 - Move DIC-imada analysis and processing into the package.
   - consider how to make agnostic the two parts.
 - Create a GUI to make easier the selection
@@ -25,6 +25,23 @@ Mainly is used for documenting the TODO list.
 - Consider developing a guide for the steps of the analysis
 
 # Completed
+
+
+## 2023-03-05
+- PRIORITY: when the DIC analsysis xlsx file is created, merge the meta-data info with the dic analysis results. 
+- File structure:
+  - data-tensile: the csv from the imada
+  - img_png: the folder with the imgs
+
+convert_image_times2meta_data.py
+- Added image data directory  
+- renamed "meta-data.txt" --> "_meta-data.txt"
+post_1_obtain_dic_strain.py
+- changed the column names to the dic export file
+- exported data file with time column 
+- moved time into H column from I in the output file
+post_2_merge_dic_ut.py
+- created plot_synced_graph function to verify the sync time
 
 ## 2023-03-03
 - Completed the code necessary to perform the DIC analysis from the imada files
