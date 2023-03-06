@@ -6,9 +6,7 @@ Mainly is used for documenting the TODO list.
 
 # TODOList
 ## DIC 
-- move result.dic file inside the output
-- Move DIC-imada analysis and processing into the package.
-  - consider how to make agnostic the two parts.
+- **result.dic**: understand information inside it. 
 - Create a GUI to make easier the selection
 - create a class that performs the actions for the grids (e.g. GridContainer).
   - e.g. create a method that extracts the mean strain values.
@@ -17,8 +15,6 @@ Mainly is used for documenting the TODO list.
   - area, cropping move into file
   - check init function and consider replacing it with a class.
   - see if read is necessary
-- Investigate further the mechanism for the area of interest.
-  - Investigate if it is possible and reliable to use the argument in the init class.
 
 ## OTHER
 - PRIORITY: consider the structure of the folder for each analysis to be able to automate it.
@@ -26,6 +22,16 @@ Mainly is used for documenting the TODO list.
 
 # Completed
 ## 2023-03-06
+- The mechanism for the area of interest. 
+  - when [(tl_X, tl_Y), (br_X, br_Y)] are used no need for selection
+  - markers are displayed
+- It is possible and reliable to use the argument in the init.
+
+
+- Move DIC-imada analysis and processing functions into the package.
+  - consider how to make agnostic the two parts.
+
+- moved **result.dic** file inside the output
 
 Starting working on a JSON (I also considered YAML) as a input file for each dic analysis. 
 

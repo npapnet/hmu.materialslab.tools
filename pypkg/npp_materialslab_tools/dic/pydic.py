@@ -100,9 +100,11 @@ sequence of images. The displacements are computed and a result file is written
          win_size_px (list):  the size in pixel of your correlation windows.Given as a (dx, dy) tuple
          grid_size_px (list): the size of your correlation grid. Given as a (dx, dy) tuple
          result_file (str): the name of the result file
-         area_of_interest (_type_, optional): gives the area of interset in (size_x,size_y) format. Defaults to None.
+         area_of_interest (list of two tuples, optional): gives the area of interset in 
+               [(top left x,top left xy),(bottom right x, bottom right y)  ] format.
+                 Defaults to None.
                          if you don't give this argument, a windows with the first image is displayed. 
-                         You can pick in this picture manually your area of intersest.
+                         You can pick in this picture manually your area of interest.
 
      Parsed kwargs:
           unstructured_grid=(val1,val2) : to let the 'goodFeaturesToTrack' opencv2 algorithm. Note that you can't use the 'spline' or the 'raw' interpolation method.
@@ -395,6 +397,7 @@ def pick_area_of_interest(PreliminaryImage):
 
                # if the 'c' key is pressed, break from the loop
           elif key == ord("c"):
+               print(f'The area of interest is {area}')
                break
      return area
 

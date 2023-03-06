@@ -70,13 +70,18 @@ correl_grid_size = (20,20) # the size in pixel of the interval (dx,dy) of the co
 # correl_wind_size = (16,16) # the size in pixel of the correlation windows
 # correl_grid_size = (4,4) # the size in pixel of the interval (dx,dy) of the correlation grid
 
+# area_of_interest = [(307, 114), (596, 189)]
+area_of_interest = None
+
+
 # read image series and write a separated result file 
 pydic.init(image_pattern='./img_png/*.png', 
     win_size_px=correl_wind_size, 
     grid_size_px=correl_grid_size, 
+    area_of_interest= area_of_interest,
     result_file=OUTPUT_DIR/"result.dic")
 
-
+#%%
 # # and read the result file for computing strain and displacement field from the result file 
 grid_listres = pydic.read_dic_file(result_file=OUTPUT_DIR/'result.dic', 
             interpolation='spline', 
