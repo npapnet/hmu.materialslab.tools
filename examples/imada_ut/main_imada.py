@@ -25,10 +25,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# ====== IMPORTING MODULES
+# import cv2
+import pathlib
 
-import cv2
 import numpy as np
-# ====== INTRODUCTION
+from matplotlib import pyplot as plt
+from npp_materialslab_tools.dic import pydic
+from npp_materialslab_tools.dic.misc import convert_labview_to_metainfo
+# from scipy import stats
+
+
+
+#%% [markdown]
+# #  INTRODUCTION
 # The tensile example shows how to use the pydic module to compute
 # the young's modulus and the poisson's ratio from picture captured
 # during a tensile test. The loading were recorded during the test
@@ -38,12 +48,20 @@ import numpy as np
 #  - pictures of the tensile test are located in the 'img' directory
 #  - for a better undestanding, please refer to the 'description.png' file
 #    that describes the tensile test 
-#%%
-# ====== IMPORTING MODULES
-from matplotlib import pyplot as plt
-from scipy import stats
-from npp_materialslab_tools.dic import pydic
 
+
+# %% 
+#Convert Labview output to meta data that pydic can include
+
+IMG_DIR = pathlib.Path('img_png')
+OUTPUT_DIR = pathlib.Path('output')
+LABVIEWFILE = IMG_DIR /"_image_times.txt"
+DIC_META_FILE = IMG_DIR /"_meta-data.txt"
+
+convert_labview_to_metainfo(in_fname=LABVIEWFILE, out_fname=DIC_META_FILE)
+
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+#%%
 
 #  ====== RUN PYDIC TO COMPUTE DISPLACEMENT AND STRAIN FIELDS (STRUCTURED GRID)
 correl_wind_size = (80,80) # the size in pixel of the correlation windows
@@ -56,17 +74,17 @@ correl_grid_size = (20,20) # the size in pixel of the interval (dx,dy) of the co
 pydic.init(image_pattern='./img_png/*.png', 
     win_size_px=correl_wind_size, 
     grid_size_px=correl_grid_size, 
-    result_file="result.dic")
+    result_file=OUTPUT_DIR/"result.dic")
 
 
 # # and read the result file for computing strain and displacement field from the result file 
-grid_listres = pydic.read_dic_file(result_file='result.dic', 
+grid_listres = pydic.read_dic_file(result_file=OUTPUT_DIR/'result.dic', 
             interpolation='spline', 
             strain_type='cauchy', 
             save_image=True, 
             scale_disp=10, 
             scale_grid=25, 
-            meta_info_file='img_png/_meta-data.txt')
+            meta_info_file=IMG_DIR/'_meta-data.txt')
 
 
 #  ====== OR RUN PYDIC TO COMPUTE DISPLACEMENT AND STRAIN FIELDS (WITH UNSTRUCTURED GRID OPTION)

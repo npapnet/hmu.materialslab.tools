@@ -16,16 +16,19 @@ from npp_materialslab_tools.dic.pydicGrid import grid
 OUTPUT_DIR = pathlib.Path("output")
 UTDATA = pathlib.Path("data_tensile")/"1mm_5% overlap Infill.csv"
 IMG_DIR = pathlib.Path("img_png")
+DIC_ANALYSIS_OUTPUT = OUTPUT_DIR/'result.dic'
+DIC_EXCEL_OUTPUT = OUTPUT_DIR/"myexcel.xlsx"
+DIC_META_DATA_FILE = IMG_DIR/'_meta-data.txt'
 # %%
 # loading the analysis result file
 
-grid_listres = pydic.read_dic_file(result_file='result.dic', 
+grid_listres = pydic.read_dic_file(result_file=DIC_ANALYSIS_OUTPUT, 
             interpolation='spline', 
             strain_type='cauchy', 
             save_image=True, 
             scale_disp=10, 
             scale_grid=25, 
-            meta_info_file=IMG_DIR/'_meta-data.txt')
+            meta_info_file=DIC_META_DATA_FILE)
 
 # %%
 
@@ -34,25 +37,22 @@ assert isinstance(last_grid, grid)
 last_grid.plot_field(last_grid.strain_xx, 'xx strain')
 last_grid.plot_field(last_grid.strain_yy, 'yy strain')
 plt.show()
+# last_grid.reference_image
+# last_grid.strain_xx
+# last_grid.strain_xx.mean(), last_grid.strain_xx.std()
 
-# %%
-last_grid.reference_image
-# %%
-print(last_grid.size_x)
-print(last_grid.size_y)
-print(last_grid.size_y)
-# %%
+# print(last_grid.size_x)
+# print(last_grid.size_y)
+# print(last_grid.size_y)
+# last_grid.meta_info
 
-last_grid.strain_xx
-# %%
-last_grid.strain_xx.mean(), last_grid.strain_xx.std()
 # %%
 # show as image
 plt.figure(figsize=(last_grid.size_x,last_grid.size_y))
 plt.contourf(last_grid.strain_xx.T)
 # %%
 def obtainStrainCurve(grid_list)->pd.DataFrame:
-    """this is a fucntion to obtain 
+    """this is a function to obtain one data point per image
 
     Args:
         grid_list (list): List of grids 
@@ -72,24 +72,21 @@ def obtainStrainCurve(grid_list)->pd.DataFrame:
 
 df_dic = obtainStrainCurve(grid_list=grid_listres)
 
-#%%
-df_img_meta = pd.read_csv(IMG_DIR/'_meta-data.txt', sep="\t")
+#%% 
+# Read the data from the *_meta-data.txt* 
+df_img_meta = pd.read_csv(DIC_META_DATA_FILE, sep="\t")
 
+# merge the two files
 df_dic_tot = pd.merge(df_dic,df_img_meta,  how="inner", on="file")
 #%%
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-df_dic_tot.to_excel(OUTPUT_DIR/"myexcel.xlsx")
+df_dic_tot.to_excel(DIC_EXCEL_OUTPUT)
 #%% [markdown]
 # TODO: see below
 #
 # At this point it is still necessary to add the data from _image_times.txt in the columns excel. 
 # 
 # this ought to be automatic. 
-
-
-#%%
-last_grid.meta_info
-
 
 
 # %%

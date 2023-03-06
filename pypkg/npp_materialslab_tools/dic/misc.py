@@ -1,17 +1,9 @@
-#%%
-
-# this is for converting the _images_times.txt to meta-data.txt
-#%%
-import pandas as pd
 import pathlib
 
-IMG_DIR = pathlib.Path('img_png')
-INPUTFILE = IMG_DIR /"_image_times.txt"
-OUTPUTFILE = IMG_DIR /"_meta-data.txt"
+import pandas as pd
 
 
-# %%
-def conversion_procedure(in_fname:pathlib.Path,out_fname:pathlib.Path, img_ext:str="png"):
+def convert_labview_to_metainfo(in_fname:pathlib.Path,out_fname:pathlib.Path, img_ext:str="png"):
     """coverts the output file from labview to the "meta-data.txt" required by pydic
 
     Args:
@@ -31,6 +23,3 @@ def conversion_procedure(in_fname:pathlib.Path,out_fname:pathlib.Path, img_ext:s
     df.columns= ['file', 'time(s)', 'force(N)']
 
     df.to_csv(out_fname, index=False, sep='\t')
-
-conversion_procedure(in_fname=INPUTFILE, out_fname=OUTPUTFILE)
-# %%

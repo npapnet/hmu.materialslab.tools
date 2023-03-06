@@ -25,6 +25,23 @@ Mainly is used for documenting the TODO list.
 - Consider developing a guide for the steps of the analysis
 
 # Completed
+## 2023-03-06
+
+Starting working on a JSON (I also considered YAML) as a input file for each dic analysis. 
+
+I started working on a skeleton and modified the existing py files with that in mind. 
+
+Removed **convert_image_times2meta_data.py** and moved the function into the package under **dic.misc**
+
+In **post_1_obtain_dic_strain.py**:
+- All references to file names and directories were replaced by constants. 
+- Commented out code that was not relevant anymore.
+
+In **post_2_merge_dic_ut.py**:
+- All references to file names and directories were replaced by constants.
+- Moved all functions to the top of the file
+- commented out code not relevant. 
+
 
 
 ## 2023-03-05
