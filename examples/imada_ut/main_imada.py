@@ -25,10 +25,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# ====== IMPORTING MODULES
+# import cv2
+import pathlib
 
-import cv2
 import numpy as np
-# ====== INTRODUCTION
+from matplotlib import pyplot as plt
+from npp_materialslab_tools.dic import pydic
+from npp_materialslab_tools.dic.misc import convert_labview_to_metainfo
+# from scipy import stats
+
+
+
+#%% [markdown]
+# #  INTRODUCTION
 # The tensile example shows how to use the pydic module to compute
 # the young's modulus and the poisson's ratio from picture captured
 # during a tensile test. The loading were recorded during the test
@@ -38,12 +48,20 @@ import numpy as np
 #  - pictures of the tensile test are located in the 'img' directory
 #  - for a better undestanding, please refer to the 'description.png' file
 #    that describes the tensile test 
-#%%
-# ====== IMPORTING MODULES
-from matplotlib import pyplot as plt
-from scipy import stats
-from npp_materialslab_tools.dic import pydic
 
+
+# %% 
+#Convert Labview output to meta data that pydic can include
+
+IMG_DIR = pathlib.Path('img_png')
+OUTPUT_DIR = pathlib.Path('output')
+LABVIEWFILE = IMG_DIR /"_image_times.txt"
+DIC_META_FILE = IMG_DIR /"_meta-data.txt"
+
+convert_labview_to_metainfo(in_fname=LABVIEWFILE, out_fname=DIC_META_FILE)
+
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+#%%
 
 #  ====== RUN PYDIC TO COMPUTE DISPLACEMENT AND STRAIN FIELDS (STRUCTURED GRID)
 correl_wind_size = (80,80) # the size in pixel of the correlation windows
@@ -52,21 +70,26 @@ correl_grid_size = (20,20) # the size in pixel of the interval (dx,dy) of the co
 # correl_wind_size = (16,16) # the size in pixel of the correlation windows
 # correl_grid_size = (4,4) # the size in pixel of the interval (dx,dy) of the correlation grid
 
+# area_of_interest = [(307, 114), (596, 189)]
+area_of_interest = None
+
+
 # read image series and write a separated result file 
 pydic.init(image_pattern='./img_png/*.png', 
     win_size_px=correl_wind_size, 
     grid_size_px=correl_grid_size, 
-    result_file="result.dic")
+    area_of_interest= area_of_interest,
+    result_file=OUTPUT_DIR/"result.dic")
 
-
+#%%
 # # and read the result file for computing strain and displacement field from the result file 
-grid_listres = pydic.read_dic_file(result_file='result.dic', 
+grid_listres = pydic.read_dic_file(result_file=OUTPUT_DIR/'result.dic', 
             interpolation='spline', 
             strain_type='cauchy', 
             save_image=True, 
             scale_disp=10, 
             scale_grid=25, 
-            meta_info_file='img_png/meta-data.txt')
+            meta_info_file=IMG_DIR/'_meta-data.txt')
 
 
 #  ====== OR RUN PYDIC TO COMPUTE DISPLACEMENT AND STRAIN FIELDS (WITH UNSTRUCTURED GRID OPTION)
@@ -86,62 +109,3 @@ grid_listres = pydic.read_dic_file(result_file='result.dic',
 #                     meta_info_file='img/meta-data.txt')
 
 #%%
-
-#  ====== RESULTS
-# Now you can go in the 'img/pydic' directory to see the results :
-# - the 'disp', 'grid' and 'marker' directories contain image files
-# - the 'result' directory contain raw text csv file where displacement and strain fields are written  
-
-
-
-# ======= STANDARD POST-TREATMENT : STRAIN FIELD MAP PLOTTING
-# the pydic.grid_list (grid_listres) is a list that contains all the correlated grids (one per image)
-# the grid objects are the main objects of pydic  
-last_grid = grid_listres[-1]
-last_grid.plot_field(last_grid.strain_xx, 'xx strain')
-last_grid.plot_field(last_grid.strain_yy, 'yy strain')
-plt.show()
-
-
-
-
-# ======== NON-STANDARD POST-TREATMENT : COMPUTE ELASTIC CONSTANTS (E & Nu)
-
-# extract force from meta-data file 
-force = np.array([float(x.meta_info['force(N)']) for x in grid_listres])
-
-# compute the main normal stress with this force 
-sample_width     = 0.012
-sample_thickness = 0.002
-stress = force/(sample_width * sample_thickness)
-
-
-# now extract the main average strains on xx and yy
-# - first, we need to reduce the interest zone where the average values are computed
-
-test = grid_listres[0].size_x/4
-
-x_range = range(int(grid_listres[0].size_x/4), int(3*grid_listres[0].size_x/4)) 
-y_range = range(int(grid_listres[0].size_y/4), int(3*grid_listres[0].size_y/4))
-# - use grid.average method to compute the average values of the xx and yy strains
-ave_strain_xx = np.array([grid.average(grid.strain_xx, x_range, y_range) for grid in grid_listres])
-ave_strain_yy = np.array([grid.average(grid.strain_yy, x_range, y_range) for grid in grid_listres])
-
-
-
-# now compute Young's modulus thanks to scipy linear regression
-E, intercept, r_value, p_value, std_err = stats.linregress(ave_strain_xx, stress)
-# and compute Poisson's ratio thanks to scipy linear regression
-Nu, intercept, r_value, p_value, std_err = stats.linregress(ave_strain_xx, -ave_strain_yy)
-
-
-
-# and print results !
-print ("\nThe computed elastic constants are :")
-print ("  => Young's modulus E={:.2f} GPa".format(E*1e-9))
-print ("  => Poisson's ratio Nu={:.2f}".format(Nu))
-
-
-
-# enjoy !
-# damien.andre@unilim.fr

@@ -196,7 +196,17 @@ method to treat and post-treat results"""
           self.meta_info = meta_info
 
      def prepare_saved_file(self, prefix, extension):
-          """Not documented, for internal use only"""
+          """prepares the filename in the form:
+
+          <image folder>/pydic/<prefix>/<image_name>_<prefix>.<extension>
+
+          Args:
+              prefix (str): forder that the file will be saved in the pydic folder structure
+              extension (str): File extension
+
+          Returns:
+              _type_: _description_
+          """
 
           folder = os.path.dirname(self.image)
           folder = folder + '/pydic/' + prefix

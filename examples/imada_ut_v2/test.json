@@ -1,0 +1,13 @@
+
+{
+    "IMG_DIR" : "img_png",
+    "LABVIEWFILE" : "_image_times.txt",
+    "DIC_META_FILE" :"_meta-data.txt",
+
+    "DIC-config" :{
+        "correl_wind_size" : [80,80], 
+        "?correl_wind_size": "the size in pixel of the correlation windows",
+        "correl_grid_size" : "(20,20)",
+        "?correl_grid_size": "the size in pixel of the interval (dx,dy) of the correlation grid"
+    }
+}
